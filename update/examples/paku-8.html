@@ -21,7 +21,7 @@
       return Math.floor(Math.random() * (max - min + 1)) + min;
     }
 
-    // sub-pipeline
+    // simulation sub-pipeline
     const simulationPipelineMoveCharacterPipeline = {
       stageDatas: [
         // move player 
@@ -172,6 +172,8 @@
     // result: Partial<WorldState>
     const simulationPipeline = {
       stageDatas: [
+        // TODO setup stage (ie, if player is dead, reset the game)
+
         // execute move character sub-pipeline
         {
           produceParams(
@@ -735,9 +737,12 @@
 </head>
 
 <body>
-  <canvas id="canvas" width="64" height="64" style="image-rendering: pixelated;">
+  <h1>paku-8</h1>
+  <h2>This examples demonstrates usage of distinct pipelines with nesting.</h2>
+  <canvas id="canvas" width="64" height="64" style="image-rendering: pixelated; width: 50%; height: 50%">
 
   </canvas>
+  <p>The game resets when a ghost catches you.</p>
 </body>
 
 </html>

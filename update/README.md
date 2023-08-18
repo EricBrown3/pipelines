@@ -39,3 +39,6 @@ Passes always execute.
 Params of a pass are produced by the stage.
 
 Passes are useful for independent execution within a stage, which have no dependencies of each other.
+
+# Usage
+Pipelines can execute other pipelines. This allows for "synchronization" points.
