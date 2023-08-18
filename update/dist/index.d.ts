@@ -1,7 +1,7 @@
 /**
  * Data for executing a stage.
  */
-interface PassData<TParams, TResult> {
+interface StageData<TParams, TResult> {
     /**
      * should execute this pass?
      */
@@ -12,44 +12,23 @@ interface PassData<TParams, TResult> {
     doExecute: (params: TParams) => TResult;
 }
 /**
- * Data for executing a stage with multiple passes.
+ * Data for executing a stage within a pipeline.
  */
-interface MultiPassStageData<TPipelineParams, TPassParams, TPassResult> extends PassData<TPassParams, TPassResult> {
-    readonly passData: Array<PassData<TPassParams, TPassResult>>;
-    /**
-     * Produce params for all passes in this stage.
-     */
-    readonly produceParams: (pipelineParams: TPipelineParams) => TPassParams;
-    /**
-     * Before executing pass(es).
-     */
-    readonly beforeExecute?: (pipelineParams: TPipelineParams, params: TPassParams) => void;
-    /**
-     * After executing pass(es).
-     * Invoked when {@link shouldExecute} returns `false`.
-     * @param results return of `doExecute`. `void` when `shouldExecute` returned `false`.
-     */
-    readonly afterExecute?: (pipelineParams: TPipelineParams, params: TPassParams, results: Array<TPassResult | void>) => void;
-}
-/**
- * Data for executing a stage with a single pass.
- */
-interface SinglePassStageData<TPipelineParams, TPassParams, TPassResult> {
-    readonly passData: PassData<TPassParams, TPassResult>;
+interface PipelineStageData<TPipelineParams, TStageParams, TStageResult> extends StageData<TStageParams, TStageResult> {
     /**
      * Produce params for this stage.
      */
-    readonly produceParams: (pipelineParams: TPipelineParams) => TPassParams;
+    readonly produceParams: (pipelineParams: TPipelineParams) => TStageParams;
     /**
      * Before executing any stage.
      */
-    readonly beforeExecute?: (pipelineParams: TPipelineParams, params: TPassParams) => void;
+    readonly beforeExecute?: (pipelineParams: TPipelineParams, params: TStageParams) => void;
     /**
      * After executing any stage.
      * Invoked when {@link shouldExecute} returns `false`.
      * @param result return of `doExecute`. `void` when `shouldExecute` returned `false`.
      */
-    readonly afterExecute?: (pipelineParams: TPipelineParams, params: TPassParams, result: TPassResult | void) => void;
+    readonly afterExecute?: (pipelineParams: TPipelineParams, params: TStageParams, result: TStageResult | void) => void;
 }
 /**
  * Data for executing a pipeline.
@@ -60,7 +39,7 @@ interface PipelineData<TParams, TResult, TPassParams, TPassResult> {
     /**
      * Stages to execute.
      */
-    readonly stageDatas: Array<SinglePassStageData<TParams, TPassParams, TPassResult> | MultiPassStageData<TParams, TPassParams, TPassResult>>;
+    readonly stageDatas: Array<PipelineStageData<TParams, TPassParams, TPassResult>>;
     /**
      * Produce this pipeline's results.
      */
@@ -74,4 +53,4 @@ interface PipelineData<TParams, TResult, TPassParams, TPassResult> {
  */
 declare function executePipeline<TParams, TResult, TPassParams, TPassResult>(data: PipelineData<TParams, TResult, TPassParams, TPassResult>, params: TParams): TResult;
 
-export { PipelineData, PassData as StageData, executePipeline };
+export { PipelineData, StageData, executePipeline };

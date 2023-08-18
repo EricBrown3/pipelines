@@ -22,137 +22,199 @@
     }
 
     // add pass result to pipeline params state api
-    function addPassResultAfterExecute(
+    function addStageResultAfterExecute(
       pipelineParams,
       params,
       result,
     ) {
       const initialPipelineState = pipelineParams.stateApi.get()
       pipelineParams.stateApi.set({
-        passResults: [
-          ...initialPipelineState.passResults,
+        stageResults: [
+          ...initialPipelineState.stageResults,
           result
         ]
       })
     }
 
-    // params: { worldState: WorldState, input: { x: number, y: number  } }
-    // result: Partial<WorldState>
-    const simulationPipeline = {
+    // sub-pipeline
+    const simulationPipelineMoveCharacterPipeline = {
       stageDatas: [
-        // move characters 
+        // move player 
         {
           produceParams(
             params
           ) {
             return params
           },
-          afterExecute: addPassResultAfterExecute,
-          passData: [
-            // move player 
-            {
+          shouldExecute(
+            params
+          ) {
+            return params.playerInput.x !== 0 || params.playerInput.y !== 0
+          },
+          doExecute(
+            params
+          ) {
+            return {
+              player: {
+                position: {
+                  x: params.worldState.player.position.x + params.playerInput.x,
+                  y: params.worldState.player.position.y + params.playerInput.y,
+                }
+              }
+            }
+          },
+          afterExecute: addStageResultAfterExecute,
+        },
+        // moveBlinky
+        {
+          produceParams(
+            params
+          ) {
+            return params
+          },
+          shouldExecute(
+            params
+          ) {
+            return params.blinkyInput.x !== 0 || params.blinkyInput.y !== 0
+          },
+          doExecute(
+            params
+          ) {
+            return {
+              blinky: {
+                position: {
+                  x: params.worldState.blinky.position.x + params.blinkyInput.x,
+                  y: params.worldState.blinky.position.y + params.blinkyInput.y,
+                }
+              }
+            }
+          },
+          afterExecute: addStageResultAfterExecute,
+        },
+        // moveInky
+        {
+          produceParams(
+            params
+          ) {
+            return params
+          },
+          shouldExecute(
+            params
+          ) {
+            return params.inkyInput.x !== 0 || params.inkyInput.y !== 0
+          },
+          doExecute(
+            params
+          ) {
+            return {
+              inky: {
+                position: {
+                  x: params.worldState.inky.position.x + params.inkyInput.x,
+                  y: params.worldState.inky.position.y + params.inkyInput.y,
+                }
+              }
+            }
+          },
+          afterExecute: addStageResultAfterExecute,
+        },
+        // movePinky
+        {
+          produceParams(
+            params
+          ) {
+            return params
+          },
+          shouldExecute(
+            params
+          ) {
+            return params.pinkyInput.x !== 0 || params.pinkyInput.y !== 0
+          },
+          doExecute(
+            params
+          ) {
+            return {
+              pinky: {
+                position: {
+                  x: params.worldState.pinky.position.x + params.pinkyInput.x,
+                  y: params.worldState.pinky.position.y + params.pinkyInput.y,
+                }
+              }
+            }
+          },
+          afterExecute: addStageResultAfterExecute,
+        },
+        // moveClyde
+        {
+          produceParams(
+            params
+          ) {
+            return params
+          },
+          shouldExecute(
+            params
+          ) {
+            return params.clydeInput.x !== 0 || params.clydeInput.y !== 0
+          },
+          doExecute(
+            params
+          ) {
+            return {
+              clyde: {
+                position: {
+                  x: params.worldState.clyde.position.x + params.clydeInput.x,
+                  y: params.worldState.clyde.position.y + params.clydeInput.y,
+                }
+              }
+            }
+          },
+          afterExecute: addStageResultAfterExecute,
+        },
+      ],
+      produceResults(
+        params
+      ) {
+        const initialPipelineState = params.stateApi.get()
+        return initialPipelineState.stageResults
+          .flat()
+          .filter(iStageResult => iStageResult !== undefined)
+          .reduce(
+            (accumulator, currentValue) => {
+              return Object.assign(
+                accumulator,
+                currentValue
+              )
+            },
+            params.worldState
+          );
+      }
+    }
 
-              shouldExecute(
-                params
-              ) {
-                return params.playerInput.x !== 0 || params.playerInput.y !== 0
-              },
-              doExecute(
-                params
-              ) {
-                return {
-                  player: {
-                    position: {
-                      x: params.worldState.player.position.x + params.playerInput.x,
-                      y: params.worldState.player.position.y + params.playerInput.y,
-                    }
-                  }
-                }
-              },
-            },
-            // moveBlinky
-            {
-              shouldExecute(
-                params
-              ) {
-                return params.blinkyInput.x !== 0 || params.blinkyInput.y !== 0
-              },
-              doExecute(
-                params
-              ) {
-                return {
-                  blinky: {
-                    position: {
-                      x: params.worldState.blinky.position.x + params.blinkyInput.x,
-                      y: params.worldState.blinky.position.y + params.blinkyInput.y,
-                    }
-                  }
-                }
-              },
-            },
-            // moveInky
-            {
-              shouldExecute(
-                params
-              ) {
-                return params.inkyInput.x !== 0 || params.inkyInput.y !== 0
-              },
-              doExecute(
-                params
-              ) {
-                return {
-                  inky: {
-                    position: {
-                      x: params.worldState.inky.position.x + params.inkyInput.x,
-                      y: params.worldState.inky.position.y + params.inkyInput.y,
-                    }
-                  }
-                }
-              },
-            },
-            // movePinky
-            {
-              shouldExecute(
-                params
-              ) {
-                return params.pinkyInput.x !== 0 || params.pinkyInput.y !== 0
-              },
-              doExecute(
-                params
-              ) {
-                return {
-                  pinky: {
-                    position: {
-                      x: params.worldState.pinky.position.x + params.pinkyInput.x,
-                      y: params.worldState.pinky.position.y + params.pinkyInput.y,
-                    }
-                  }
-                }
-              },
-            },
-            // moveClyde
-            {
-              shouldExecute(
-                params
-              ) {
-                return params.clydeInput.x !== 0 || params.clydeInput.y !== 0
-              },
-              doExecute(
-                params
-              ) {
-                return {
-                  clyde: {
-                    position: {
-                      x: params.worldState.clyde.position.x + params.clydeInput.x,
-                      y: params.worldState.clyde.position.y + params.clydeInput.y,
-                    }
-                  }
-                }
-              },
-            },
-          ],
+    // params: { worldState: WorldState, input: { x: number, y: number  } }
+    // result: Partial<WorldState>
+    const simulationPipeline = {
+      stageDatas: [
+        // execute move character sub-pipeline
+        {
+          produceParams(
+            params
+          ) {
+            return params
+          },
+          shouldExecute(
+            params
+          ) {
+            return simulationPipelineMoveCharacterPipeline.stageDatas.some(iStageData => iStageData.shouldExecute(params))
+          },
+          doExecute(
+            params
+          ) {
+            return executePipeline(
+              simulationPipelineMoveCharacterPipeline,
+              params
+            )
+          },
+          afterExecute: addStageResultAfterExecute
         }
-
         // TODO player-stage collision stage group
         // TODO collision resolution stage group
         // TODO character-character collision stage group
@@ -162,7 +224,7 @@
         params
       ) {
         const initialPipelineState = params.stateApi.get()
-        return initialPipelineState.passResults
+        return initialPipelineState.stageResults
           .flat()
           .filter(iStageResult => iStageResult !== undefined)
           .reduce(
@@ -185,130 +247,144 @@
           ) {
             return params
           },
-          passData: {
-            shouldExecute() {
-              return true
-            },
-            doExecute(
-              params
-            ) {
-              params.context.save()
+          shouldExecute() {
+            return true
+          },
+          doExecute(
+            params
+          ) {
+            params.context.save()
 
-              params.context.fillStyle = "#1919A6"
-              params.context.fillRect(0, 0, 64, 64)
+            params.context.fillStyle = "#1919A6"
+            params.context.fillRect(0, 0, 64, 64)
 
-              params.context.restore()
-            }
+            params.context.restore()
           }
         },
-        {
+        { // drawBlinky
           produceParams(
             params
           ) {
             return params
           },
-          passData: [
-            { // drawBlinky
-              shouldExecute() {
-                return true
-              },
-              doExecute(
-                params
-              ) {
-                const id = params.context.createImageData(1, 1);
-                const d = id.data;
-                d[0] = 255;
-                d[1] = 0;
-                d[2] = 0;
-                d[3] = 255;
-                params.context.putImageData(
-                  id,
-                  params.worldState.blinky.position.x,
-                  params.worldState.blinky.position.y
-                );
-              }
-            },
-            { // drawInky
-              shouldExecute() {
-                return true
-              },
-              doExecute(
-                params
-              ) {
-                const id = params.context.createImageData(1, 1);
-                const d = id.data;
-                d[0] = 0;
-                d[1] = 255;
-                d[2] = 255;
-                d[3] = 255;
-                params.context.putImageData(
-                  id,
-                  params.worldState.inky.position.x,
-                  params.worldState.inky.position.y
-                );
-              }
-            },
-            { // drawPinky
-              shouldExecute() {
-                return true
-              },
-              doExecute(
-                params
-              ) {
-                const id = params.context.createImageData(1, 1);
-                const d = id.data;
-                d[0] = 255;
-                d[1] = 184;
-                d[2] = 255;
-                d[3] = 255;
-                params.context.putImageData(
-                  id,
-                  params.worldState.pinky.position.x,
-                  params.worldState.pinky.position.y
-                );
-              }
-            },
-            { // drawClyde
-              shouldExecute() {
-                return true
-              },
-              doExecute(
-                params
-              ) {
-                const id = params.context.createImageData(1, 1);
-                const d = id.data;
-                d[0] = 255;
-                d[1] = 184;
-                d[2] = 82;
-                d[3] = 255;
-                params.context.putImageData(
-                  id,
-                  params.worldState.clyde.position.x,
-                  params.worldState.clyde.position.y
-                );
-              }
-            },
-            { // drawPlayer
-              shouldExecute() {
-                return true
-              },
-              doExecute(
-                params
-              ) {
-                const id = params.context.createImageData(1, 1);
-                const d = id.data;
-                d[0] = 255;
-                d[1] = 255;
-                d[2] = 0;
-                d[3] = 255;
-                params.context.putImageData(
-                  id,
-                  params.worldState.player.position.x,
-                  params.worldState.player.position.y
-                );
-              }
-            }
-          ],
+          shouldExecute() {
+            return true
+          },
+          doExecute(
+            params
+          ) {
+            const id = params.context.createImageData(1, 1);
+            const d = id.data;
+            d[0] = 255;
+            d[1] = 0;
+            d[2] = 0;
+            d[3] = 255;
+            params.context.putImageData(
+              id,
+              params.worldState.blinky.position.x,
+              params.worldState.blinky.position.y
+            );
+          }
+        },
+        { // drawInky
+          produceParams(
+            params
+          ) {
+            return params
+          },
+          shouldExecute() {
+            return true
+          },
+          doExecute(
+            params
+          ) {
+            const id = params.context.createImageData(1, 1);
+            const d = id.data;
+            d[0] = 0;
+            d[1] = 255;
+            d[2] = 255;
+            d[3] = 255;
+            params.context.putImageData(
+              id,
+              params.worldState.inky.position.x,
+              params.worldState.inky.position.y
+            );
+          }
+        },
+        { // drawPinky
+          produceParams(
+            params
+          ) {
+            return params
+          },
+          shouldExecute() {
+            return true
+          },
+          doExecute(
+            params
+          ) {
+            const id = params.context.createImageData(1, 1);
+            const d = id.data;
+            d[0] = 255;
+            d[1] = 184;
+            d[2] = 255;
+            d[3] = 255;
+            params.context.putImageData(
+              id,
+              params.worldState.pinky.position.x,
+              params.worldState.pinky.position.y
+            );
+          }
+        },
+        { // drawClyde
+          produceParams(
+            params
+          ) {
+            return params
+          },
+          shouldExecute() {
+            return true
+          },
+          doExecute(
+            params
+          ) {
+            const id = params.context.createImageData(1, 1);
+            const d = id.data;
+            d[0] = 255;
+            d[1] = 184;
+            d[2] = 82;
+            d[3] = 255;
+            params.context.putImageData(
+              id,
+              params.worldState.clyde.position.x,
+              params.worldState.clyde.position.y
+            );
+          }
+        },
+        { // drawPlayer
+          produceParams(
+            params
+          ) {
+            return params
+          },
+          shouldExecute() {
+            return true
+          },
+          doExecute(
+            params
+          ) {
+            const id = params.context.createImageData(1, 1);
+            const d = id.data;
+            d[0] = 255;
+            d[1] = 255;
+            d[2] = 0;
+            d[3] = 255;
+            params.context.putImageData(
+              id,
+              params.worldState.player.position.x,
+              params.worldState.player.position.y
+            );
+          }
         }
       ],
       produceResults() {
@@ -320,58 +396,55 @@
     // result: { x: number, y: number }
     const playerInputPipeline = {
       stageDatas: [
-        // TODO mouse pass
-        // mouse pass will transform
+        // TODO mouse stage
         {
           produceParams(
             params
           ) {
             return params
           },
-          passData: {
-            shouldExecute(
-              params
-            ) {
-              return params.inputBuffer.length > 0
-            },
-            doExecute(
-              params
-            ) {
-              const nextInput = params.inputBuffer.reduce(
-                (accumulator, currentValue) => {
-                  switch (currentValue.key) {
-                    case 'w':
-                      return {
-                        x: accumulator.x,
-                        y: accumulator.y - 1
-                      }
-                    case 'a':
-                      return {
-                        x: accumulator.x - 1,
-                        y: accumulator.y
-                      }
-                    case 's':
-                      return {
-                        x: accumulator.x,
-                        y: accumulator.y + 1
-                      }
-                    case 'd':
-                      return {
-                        x: accumulator.x + 1,
-                        y: accumulator.y
-                      }
-                  }
-                },
-                {
-                  x: 0,
-                  y: 0
-                }
-              );
-
-              return nextInput
-            },
+          shouldExecute(
+            params
+          ) {
+            return params.inputBuffer.length > 0
           },
-          afterExecute: addPassResultAfterExecute
+          doExecute(
+            params
+          ) {
+            const nextInput = params.inputBuffer.reduce(
+              (accumulator, currentValue) => {
+                switch (currentValue.key) {
+                  case 'w':
+                    return {
+                      x: accumulator.x,
+                      y: accumulator.y - 1
+                    }
+                  case 'a':
+                    return {
+                      x: accumulator.x - 1,
+                      y: accumulator.y
+                    }
+                  case 's':
+                    return {
+                      x: accumulator.x,
+                      y: accumulator.y + 1
+                    }
+                  case 'd':
+                    return {
+                      x: accumulator.x + 1,
+                      y: accumulator.y
+                    }
+                }
+              },
+              {
+                x: 0,
+                y: 0
+              }
+            );
+
+            return nextInput
+          },
+          afterExecute: addStageResultAfterExecute
         }
       ],
       produceResults(
@@ -379,7 +452,7 @@
       ) {
         const initialPipelineState = params.stateApi.get()
 
-        return initialPipelineState.passResults
+        return initialPipelineState.stageResults
           .flat()
           .filter(iStageResult => iStageResult !== undefined)
           .reduce(
@@ -397,72 +470,30 @@
       }
     }
 
-    // params: {}
-    // result: { x: number, y: number }
-    const clydeInputPipeline = {
-      stageDatas: [
-        {
-          passData: {
-            shouldExecute(
-              params
-            ) {
-              return true
-            },
-            doExecute(
-              params
-            ) {
-              return {
-                x: getRandomInt(-1, 1),
-                y: getRandomInt(-1, 1),
-              }
-            },
-          },
-          produceParams(
-            params
-          ) {
-            return params
-          },
-          afterExecute: addPassResultAfterExecute,
-        }
-      ],
-      produceResults(
-        params
-      ) {
-        const initialPipelineState = params.stateApi.get()
-
-        return {
-          x: initialPipelineState.passResults[0]?.x ?? 0,
-          y: initialPipelineState.passResults[0]?.y ?? 0
-        }
-      }
-    }
-
     // params: worldState
     // result: { x: number, y: number }
     const blinkyInputPipeline = {
       stageDatas: [
         {
-          passData: {
-            shouldExecute(
-              params
-            ) {
-              return true
-            },
-            doExecute(
-              params
-            ) {
-              return {
-                x: Math.sign(params.worldState.player.position.x - params.worldState.blinky.position.x),
-                y: Math.sign(params.worldState.player.position.y - params.worldState.blinky.position.y),
-              }
-            },
+          shouldExecute(
+            params
+          ) {
+            return true
+          },
+          doExecute(
+            params
+          ) {
+            return {
+              x: Math.sign(params.worldState.player.position.x - params.worldState.blinky.position.x),
+              y: Math.sign(params.worldState.player.position.y - params.worldState.blinky.position.y),
+            }
           },
           produceParams(
             params
           ) {
             return params
           },
-          afterExecute: addPassResultAfterExecute,
+          afterExecute: addStageResultAfterExecute,
         }
       ],
       produceResults(
@@ -471,8 +502,8 @@
         const initialPipelineState = params.stateApi.get()
 
         return {
-          x: initialPipelineState.passResults[0]?.x ?? 0,
-          y: initialPipelineState.passResults[0]?.y ?? 0
+          x: initialPipelineState.stageResults[0]?.x ?? 0,
+          y: initialPipelineState.stageResults[0]?.y ?? 0
         }
       }
     }
@@ -482,35 +513,33 @@
     const inkyInputPipeline = {
       stageDatas: [
         {
-          passData: {
-            shouldExecute(
-              params
-            ) {
-              return true
-            },
-            doExecute(
-              params
-            ) {
-              if (params.worldState.inky.position.x !== params.worldState.player.position.x) {
-                return {
-                  x: Math.sign(params.worldState.player.position.x - params.worldState.inky.position.x),
-                  y: 0,
-                }
+          shouldExecute(
+            params
+          ) {
+            return true
+          },
+          doExecute(
+            params
+          ) {
+            if (params.worldState.inky.position.x !== params.worldState.player.position.x) {
+              return {
+                x: Math.sign(params.worldState.player.position.x - params.worldState.inky.position.x),
+                y: 0,
               }
-              else {
-                return {
-                  x: 0,
-                  y: Math.sign(params.worldState.player.position.y - params.worldState.inky.position.y),
-                }
+            }
+            else {
+              return {
+                x: 0,
+                y: Math.sign(params.worldState.player.position.y - params.worldState.inky.position.y),
               }
-            },
+            }
           },
           produceParams(
             params
           ) {
             return params
           },
-          afterExecute: addPassResultAfterExecute,
+          afterExecute: addStageResultAfterExecute,
         }
       ],
       produceResults(
@@ -519,8 +548,8 @@
         const initialPipelineState = params.stateApi.get()
 
         return {
-          x: initialPipelineState.passResults[0]?.x ?? 0,
-          y: initialPipelineState.passResults[0]?.y ?? 0
+          x: initialPipelineState.stageResults[0]?.x ?? 0,
+          y: initialPipelineState.stageResults[0]?.y ?? 0
         }
       }
     }
@@ -530,35 +559,33 @@
     const pinkyInputPipeline = {
       stageDatas: [
         {
-          passData: {
-            shouldExecute(
-              params
-            ) {
-              return true
-            },
-            doExecute(
-              params
-            ) {
-              if (params.worldState.pinky.position.y !== params.worldState.player.position.y) {
-                return {
-                  x: 0,
-                  y: Math.sign(params.worldState.player.position.y - params.worldState.pinky.position.y),
-                }
+          shouldExecute(
+            params
+          ) {
+            return true
+          },
+          doExecute(
+            params
+          ) {
+            if (params.worldState.pinky.position.y !== params.worldState.player.position.y) {
+              return {
+                x: 0,
+                y: Math.sign(params.worldState.player.position.y - params.worldState.pinky.position.y),
               }
-              else {
-                return {
-                  x: Math.sign(params.worldState.player.position.x - params.worldState.pinky.position.x),
-                  y: 0,
-                }
+            }
+            else {
+              return {
+                x: Math.sign(params.worldState.player.position.x - params.worldState.pinky.position.x),
+                y: 0,
               }
-            },
+            }
           },
           produceParams(
             params
           ) {
             return params
           },
-          afterExecute: addPassResultAfterExecute,
+          afterExecute: addStageResultAfterExecute,
         }
       ],
       produceResults(
@@ -567,8 +594,46 @@
         const initialPipelineState = params.stateApi.get()
 
         return {
-          x: initialPipelineState.passResults[0]?.x ?? 0,
-          y: initialPipelineState.passResults[0]?.y ?? 0
+          x: initialPipelineState.stageResults[0]?.x ?? 0,
+          y: initialPipelineState.stageResults[0]?.y ?? 0
+        }
+      }
+    }
+
+    // params: {}
+    // result: { x: number, y: number }
+    const clydeInputPipeline = {
+      stageDatas: [
+        {
+          shouldExecute(
+            params
+          ) {
+            return true
+          },
+          doExecute(
+            params
+          ) {
+            return {
+              x: getRandomInt(-1, 1),
+              y: getRandomInt(-1, 1),
+            }
+          },
+          produceParams(
+            params
+          ) {
+            return params
+          },
+          afterExecute: addStageResultAfterExecute,
+        }
+      ],
+      produceResults(
+        params
+      ) {
+        const initialPipelineState = params.stateApi.get()
+
+        return {
+          x: initialPipelineState.stageResults[0]?.x ?? 0,
+          y: initialPipelineState.stageResults[0]?.y ?? 0
         }
       }
     }
@@ -621,7 +686,7 @@
 
       // execute player input pipeline
       let playerInputPipelineState = {
-        passResults: []
+        stageResults: []
       }
       const playerInputPipelineStateApi = {
         set(nextState) {
@@ -648,7 +713,7 @@
 
       // execute blinky input pipeline
       let blinkyInputPipelineState = {
-        passResults: []
+        stageResults: []
       }
       const blinkyInputPipelineStateApi = {
         set(nextState) {
@@ -671,7 +736,7 @@
 
       // execute inky input pipeline
       let inkyInputPipelineState = {
-        passResults: []
+        stageResults: []
       }
       const inkyInputPipelineStateApi = {
         set(nextState) {
@@ -694,7 +759,7 @@
 
       // execute pinky input pipeline
       let pinkyInputPipelineState = {
-        passResults: []
+        stageResults: []
       }
       const pinkyInputPipelineStateApi = {
         set(nextState) {
@@ -717,7 +782,7 @@
 
       // execute clyde input pipeline
       let clydeInputPipelineState = {
-        passResults: []
+        stageResults: []
       }
       const clydeInputPipelineStateApi = {
         set(nextState) {
@@ -739,7 +804,7 @@
 
       // execute simulation pipeline
       let simulationPipelineState = {
-        passResults: []
+        stageResults: []
       }
       const simulationPipelineStateApi = {
         set(nextState) {
@@ -769,8 +834,6 @@
     }
 
     function frame() {
-
-      console.log(worldState)
       executePipeline(
         presentationPipelineData,
         {

@@ -1,7 +1,7 @@
 /**
  * Data for executing a stage.
  */
-interface PassData<
+interface StageData<
   TParams,
   TResult,
 > {
@@ -20,65 +20,26 @@ interface PassData<
 }
 
 /**
- * Data for executing a stage with multiple passes.
+ * Data for executing a stage within a pipeline.
  */
-interface MultiPassStageData<
+interface PipelineStageData<
   TPipelineParams,
-  TPassParams,
-  TPassResult,
-> extends PassData<TPassParams, TPassResult> {
-  readonly passData: Array<PassData<TPassParams, TPassResult>>;
-
-  /**
-   * Produce params for all passes in this stage.
-   */
-  readonly produceParams: (
-    pipelineParams: TPipelineParams,
-  ) => TPassParams;
-
-  /**
-   * Before executing pass(es).
-   */
-  readonly beforeExecute?: (
-    pipelineParams: TPipelineParams,
-    params: TPassParams,
-  ) => void;
-
-  /**
-   * After executing pass(es).
-   * Invoked when {@link shouldExecute} returns `false`.
-   * @param results return of `doExecute`. `void` when `shouldExecute` returned `false`.
-   */
-  readonly afterExecute?: (
-    pipelineParams: TPipelineParams,
-    params: TPassParams,
-    results: Array<TPassResult | void>,
-  ) => void;
-}
-
-/**
- * Data for executing a stage with a single pass.
- */
-interface SinglePassStageData<
-  TPipelineParams,
-  TPassParams,
-  TPassResult,
-> {
-  readonly passData: PassData<TPassParams, TPassResult>;
-
+  TStageParams,
+  TStageResult,
+> extends StageData<TStageParams, TStageResult> {
   /**
    * Produce params for this stage.
    */
   readonly produceParams: (
     pipelineParams: TPipelineParams,
-  ) => TPassParams;
+  ) => TStageParams;
 
   /**
    * Before executing any stage.
    */
   readonly beforeExecute?: (
     pipelineParams: TPipelineParams,
-    params: TPassParams,
+    params: TStageParams,
   ) => void;
 
   /**
@@ -88,8 +49,8 @@ interface SinglePassStageData<
    */
   readonly afterExecute?: (
     pipelineParams: TPipelineParams,
-    params: TPassParams,
-    result: TPassResult | void,
+    params: TStageParams,
+    result: TStageResult | void,
   ) => void;
 }
 
@@ -108,8 +69,7 @@ interface PipelineData<
    * Stages to execute.
    */
   readonly stageDatas: Array<
-    | SinglePassStageData<TParams, TPassParams, TPassResult>
-    | MultiPassStageData<TParams, TPassParams, TPassResult>
+    | PipelineStageData<TParams, TPassParams, TPassResult>
   >;
 
   /**
@@ -145,92 +105,41 @@ function executePipeline<
     iStageOrderIndex < data.stageDatas.length;
     iStageOrderIndex++
   ) {
-    const iPipelineStageData = data.stageDatas[iStageOrderIndex];
+    const iStageData = data.stageDatas[iStageOrderIndex];
 
-    if (iPipelineStageData === undefined) {
+    if (iStageData === undefined) {
       throw new Error(`Missing data!`);
     }
 
-    if (Array.isArray(iPipelineStageData.passData)) { // multi-pass
-      let iStageResults = new Array<TPassResult | void>(
-        iPipelineStageData.passData.length,
-      );
+    const iStageParams = iStageData.produceParams(
+      params,
+    );
 
-      const iStageParams = iPipelineStageData.produceParams(
-        params,
-      );
+    iStageData.beforeExecute?.(
+      params,
+      iStageParams,
+    );
 
-      iPipelineStageData.beforeExecute?.(
-        params,
+    let iShouldExecute = iStageData.shouldExecute(
+      iStageParams,
+    );
+
+    let iStageResult;
+    if (iShouldExecute === true) {
+      iStageResult = iStageData.doExecute(
         iStageParams,
-      );
-
-      const iStages = iPipelineStageData.passData;
-      for (
-        let jStageGroupIndex = 0;
-        jStageGroupIndex < iStages.length;
-        jStageGroupIndex++
-      ) {
-        const jStageData = iStages[jStageGroupIndex];
-
-        if (jStageData === undefined) {
-          throw new Error(`Missing data!`);
-        }
-
-        const jShouldExecute = jStageData.shouldExecute(
-          iStageParams,
-        );
-
-        if (jShouldExecute === true) {
-          iStageResults[jStageGroupIndex] = jStageData.doExecute(
-            iStageParams,
-          );
-        }
-      }
-
-      (iPipelineStageData as MultiPassStageData<
-        TParams,
-        TPassParams,
-        TPassResult
-      >)
-        .afterExecute?.(
-          params,
-          iStageParams,
-          iStageResults,
-        );
-    } else { // single pass
-      const iStageParams = iPipelineStageData.produceParams(
-        params,
-      );
-
-      iPipelineStageData.beforeExecute?.(
-        params,
-        iStageParams,
-      );
-
-      const iPassData = iPipelineStageData.passData;
-
-      let iShouldExecute = iPassData.shouldExecute(
-        iStageParams,
-      );
-
-      let iStageResult;
-      if (iShouldExecute === true) {
-        iStageResult = iPassData.doExecute(
-          iStageParams,
-        );
-      }
-
-      (iPipelineStageData as SinglePassStageData<
-        TParams,
-        TPassParams,
-        TPassResult
-      >).afterExecute?.(
-        params,
-        iStageParams,
-        iStageResult,
       );
     }
+
+    (iStageData as PipelineStageData<
+      TParams,
+      TPassParams,
+      TPassResult
+    >).afterExecute?.(
+      params,
+      iStageParams,
+      iStageResult,
+    );
   }
 
   // produce results
@@ -239,4 +148,4 @@ function executePipeline<
   );
 }
 
-export { executePipeline, type PassData as StageData, type PipelineData };
+export { executePipeline, type StageData as StageData, type PipelineData };
