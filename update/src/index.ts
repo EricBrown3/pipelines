@@ -6,13 +6,13 @@ interface StageData<
   TResult,
 > {
   /**
-   * should execute this pass?
+   * should execute this stage?
    */
   shouldExecute: (
     params: TParams,
   ) => boolean;
   /**
-   * Execute this pass.
+   * Execute this stage.
    */
   doExecute: (
     params: TParams,
@@ -56,20 +56,20 @@ interface PipelineStageData<
 
 /**
  * Data for executing a pipeline.
- * @template TPassParams base type of stage params.
- * @template TPassResult base type of stage results.
+ * @template TStageParams base type of stage params.
+ * @template TStageResult base type of stage results.
  */
 interface PipelineData<
   TParams,
   TResult,
-  TPassParams,
-  TPassResult,
+  TStageParams,
+  TStageResult,
 > {
   /**
    * Stages to execute.
    */
   readonly stageDatas: Array<
-    | PipelineStageData<TParams, TPassParams, TPassResult>
+    PipelineStageData<TParams, TStageParams, TStageResult>
   >;
 
   /**
@@ -77,29 +77,31 @@ interface PipelineData<
    */
   readonly produceResults: (
     params: TParams,
+    results: Array<TStageResult | void>,
   ) => TResult;
 }
 
 /**
  * Execute a pipeline.
- * Passes {@link StageResult.nextStageParams} of each stage into the `params` of the next stage.
- * @param params passed to the initial stage.
+ * Stagees {@link StageResult.nextStageParams} of each stage into the `params` of the next stage.
+ * @param params stageed to the initial stage.
  * @returns results of the last stage.
  */
 function executePipeline<
   TParams,
   TResult,
-  TPassParams,
-  TPassResult,
+  TStageParams,
+  TStageResult,
 >(
   data: PipelineData<
     TParams,
     TResult,
-    TPassParams,
-    TPassResult
+    TStageParams,
+    TStageResult
   >,
   params: TParams,
 ): TResult {
+  let stageResults = new Array(data.stageDatas.length);
   for (
     let iStageOrderIndex = 0;
     iStageOrderIndex < data.stageDatas.length;
@@ -129,13 +131,13 @@ function executePipeline<
       iStageResult = iStageData.doExecute(
         iStageParams,
       );
+
+      stageResults[iStageOrderIndex] = iStageResult;
+    } else {
+      stageResults[iStageOrderIndex] = undefined;
     }
 
-    (iStageData as PipelineStageData<
-      TParams,
-      TPassParams,
-      TPassResult
-    >).afterExecute?.(
+    iStageData.afterExecute?.(
       params,
       iStageParams,
       iStageResult,
@@ -145,7 +147,8 @@ function executePipeline<
   // produce results
   return data.produceResults(
     params,
+    stageResults,
   );
 }
 
-export { executePipeline, type StageData as StageData, type PipelineData };
+export { executePipeline, type PipelineData, type StageData as StageData };

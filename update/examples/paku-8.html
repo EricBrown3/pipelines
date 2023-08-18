@@ -21,21 +21,6 @@
       return Math.floor(Math.random() * (max - min + 1)) + min;
     }
 
-    // add pass result to pipeline params state api
-    function addStageResultAfterExecute(
-      pipelineParams,
-      params,
-      result,
-    ) {
-      const initialPipelineState = pipelineParams.stateApi.get()
-      pipelineParams.stateApi.set({
-        stageResults: [
-          ...initialPipelineState.stageResults,
-          result
-        ]
-      })
-    }
-
     // sub-pipeline
     const simulationPipelineMoveCharacterPipeline = {
       stageDatas: [
@@ -63,7 +48,6 @@
               }
             }
           },
-          afterExecute: addStageResultAfterExecute,
         },
         // moveBlinky
         {
@@ -89,7 +73,6 @@
               }
             }
           },
-          afterExecute: addStageResultAfterExecute,
         },
         // moveInky
         {
@@ -115,7 +98,6 @@
               }
             }
           },
-          afterExecute: addStageResultAfterExecute,
         },
         // movePinky
         {
@@ -141,7 +123,6 @@
               }
             }
           },
-          afterExecute: addStageResultAfterExecute,
         },
         // moveClyde
         {
@@ -167,15 +148,13 @@
               }
             }
           },
-          afterExecute: addStageResultAfterExecute,
         },
       ],
       produceResults(
-        params
+        params,
+        stageResults
       ) {
-        const initialPipelineState = params.stateApi.get()
-        return initialPipelineState.stageResults
-          .flat()
+        return stageResults
           .filter(iStageResult => iStageResult !== undefined)
           .reduce(
             (accumulator, currentValue) => {
@@ -213,7 +192,6 @@
               params
             )
           },
-          afterExecute: addStageResultAfterExecute
         }
         // TODO player-stage collision stage group
         // TODO collision resolution stage group
@@ -221,11 +199,10 @@
         // TODO combat stage
       ],
       produceResults(
-        params
+        params,
+        stageResults
       ) {
-        const initialPipelineState = params.stateApi.get()
-        return initialPipelineState.stageResults
-          .flat()
+        return stageResults
           .filter(iStageResult => iStageResult !== undefined)
           .reduce(
             (accumulator, currentValue) => {
@@ -444,16 +421,13 @@
 
             return nextInput
           },
-          afterExecute: addStageResultAfterExecute
         }
       ],
       produceResults(
-        params
+        params,
+        stageResults
       ) {
-        const initialPipelineState = params.stateApi.get()
-
-        return initialPipelineState.stageResults
-          .flat()
+        return stageResults
           .filter(iStageResult => iStageResult !== undefined)
           .reduce(
             (accumulator, currentValue) => {
@@ -493,17 +467,15 @@
           ) {
             return params
           },
-          afterExecute: addStageResultAfterExecute,
         }
       ],
       produceResults(
-        params
+        params,
+        stageResults
       ) {
-        const initialPipelineState = params.stateApi.get()
-
         return {
-          x: initialPipelineState.stageResults[0]?.x ?? 0,
-          y: initialPipelineState.stageResults[0]?.y ?? 0
+          x: stageResults[0]?.x ?? 0,
+          y: stageResults[0]?.y ?? 0
         }
       }
     }
@@ -539,17 +511,15 @@
           ) {
             return params
           },
-          afterExecute: addStageResultAfterExecute,
         }
       ],
       produceResults(
-        params
+        params,
+        stageResults
       ) {
-        const initialPipelineState = params.stateApi.get()
-
         return {
-          x: initialPipelineState.stageResults[0]?.x ?? 0,
-          y: initialPipelineState.stageResults[0]?.y ?? 0
+          x: stageResults[0]?.x ?? 0,
+          y: stageResults[0]?.y ?? 0
         }
       }
     }
@@ -585,17 +555,15 @@
           ) {
             return params
           },
-          afterExecute: addStageResultAfterExecute,
         }
       ],
       produceResults(
-        params
+        params,
+        stageResults
       ) {
-        const initialPipelineState = params.stateApi.get()
-
         return {
-          x: initialPipelineState.stageResults[0]?.x ?? 0,
-          y: initialPipelineState.stageResults[0]?.y ?? 0
+          x: stageResults[0]?.x ?? 0,
+          y: stageResults[0]?.y ?? 0
         }
       }
     }
@@ -623,17 +591,15 @@
           ) {
             return params
           },
-          afterExecute: addStageResultAfterExecute,
         }
       ],
       produceResults(
-        params
+        params,
+        stageResults
       ) {
-        const initialPipelineState = params.stateApi.get()
-
         return {
-          x: initialPipelineState.stageResults[0]?.x ?? 0,
-          y: initialPipelineState.stageResults[0]?.y ?? 0
+          x: stageResults[0]?.x ?? 0,
+          y: stageResults[0]?.y ?? 0
         }
       }
     }
@@ -685,24 +651,9 @@
     function step() {
 
       // execute player input pipeline
-      let playerInputPipelineState = {
-        stageResults: []
-      }
-      const playerInputPipelineStateApi = {
-        set(nextState) {
-          playerInputPipelineState = {
-            ...playerInputPipelineState,
-            ...nextState
-          }
-        },
-        get() {
-          return playerInputPipelineState
-        }
-      }
       const playerInput = executePipeline(
         playerInputPipeline,
         {
-          stateApi: playerInputPipelineStateApi,
           inputBuffer,
         }
       )
@@ -712,115 +663,41 @@
       // non-player characters have input pipelines using world state
 
       // execute blinky input pipeline
-      let blinkyInputPipelineState = {
-        stageResults: []
-      }
-      const blinkyInputPipelineStateApi = {
-        set(nextState) {
-          blinkyInputPipelineState = {
-            ...blinkyInputPipelineState,
-            ...nextState
-          }
-        },
-        get() {
-          return blinkyInputPipelineState
-        }
-      }
       const blinkyInput = executePipeline(
         blinkyInputPipeline,
         {
-          stateApi: blinkyInputPipelineStateApi,
           worldState
         }
       )
 
       // execute inky input pipeline
-      let inkyInputPipelineState = {
-        stageResults: []
-      }
-      const inkyInputPipelineStateApi = {
-        set(nextState) {
-          inkyInputPipelineState = {
-            ...inkyInputPipelineState,
-            ...nextState
-          }
-        },
-        get() {
-          return inkyInputPipelineState
-        }
-      }
       const inkyInput = executePipeline(
         inkyInputPipeline,
         {
-          stateApi: inkyInputPipelineStateApi,
           worldState
         }
       )
 
       // execute pinky input pipeline
-      let pinkyInputPipelineState = {
-        stageResults: []
-      }
-      const pinkyInputPipelineStateApi = {
-        set(nextState) {
-          pinkyInputPipelineState = {
-            ...pinkyInputPipelineState,
-            ...nextState
-          }
-        },
-        get() {
-          return pinkyInputPipelineState
-        }
-      }
       const pinkyInput = executePipeline(
         pinkyInputPipeline,
         {
-          stateApi: pinkyInputPipelineStateApi,
           worldState
         }
       )
 
       // execute clyde input pipeline
-      let clydeInputPipelineState = {
-        stageResults: []
-      }
-      const clydeInputPipelineStateApi = {
-        set(nextState) {
-          clydeInputPipelineState = {
-            ...clydeInputPipelineState,
-            ...nextState
-          }
-        },
-        get() {
-          return clydeInputPipelineState
-        }
-      }
       const clydeInput = executePipeline(
         clydeInputPipeline,
         {
-          stateApi: clydeInputPipelineStateApi
+
         }
       )
 
       // execute simulation pipeline
-      let simulationPipelineState = {
-        stageResults: []
-      }
-      const simulationPipelineStateApi = {
-        set(nextState) {
-          simulationPipelineState = {
-            ...simulationPipelineState,
-            ...nextState
-          }
-        },
-        get() {
-          return simulationPipelineState
-        }
-      }
       worldState = executePipeline(
         simulationPipeline,
         {
-          stateApi: simulationPipelineStateApi,
           worldState,
           playerInput,
           blinkyInput,

@@ -1,5 +1,6 @@
 // src/index.ts
 function executePipeline(data, params) {
+  let stageResults = new Array(data.stageDatas.length);
   for (let iStageOrderIndex = 0; iStageOrderIndex < data.stageDatas.length; iStageOrderIndex++) {
     const iStageData = data.stageDatas[iStageOrderIndex];
     if (iStageData === void 0) {
@@ -20,6 +21,9 @@ function executePipeline(data, params) {
       iStageResult = iStageData.doExecute(
         iStageParams
       );
+      stageResults[iStageOrderIndex] = iStageResult;
+    } else {
+      stageResults[iStageOrderIndex] = void 0;
     }
     iStageData.afterExecute?.(
       params,
@@ -28,7 +32,8 @@ function executePipeline(data, params) {
     );
   }
   return data.produceResults(
-    params
+    params,
+    stageResults
   );
 }
 export {
