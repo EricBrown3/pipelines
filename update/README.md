@@ -3,10 +3,13 @@ Need to execute stages of a pipeline sequentially.
 
 Primitive data structure, a "pipeline".
 
-## Dependencies
-In traditional entity component system, there is no concept of stages, only groups of systems which have similar dependencies. However, these groups can only communicate their dependencies through entities using "system state" components. This is obtuse, inefficient (causes queries/ selectors to re-run), and dirties world state with execution state. The end result is a difficult to maintain program loop.
+## Dependency
+By allowing stages to produce params (which are used by nested pipelines), we allows users to determine dependencies between stages in a straightfoward and orthogonal way.
 
-by creating an explicit pipeline of stages with params and results, we keep execution state out of world state, and allows users to determine dependencies between stage in an orthogonal way.
+Dependencies are implicitly defined through their order.
+
+Instead of sorting and groups, we define pipelines and stages.
+Instead of queries, we define params.
 
 ## Seperation of Concerns
 With traditional ECS, there is only one monolithic data structure, the "world".
@@ -43,4 +46,6 @@ Each stage produces params from the pipeline's params and current stage results.
 This allows passing the results for one pipline stage as the params for another.
 
 # Usage
-Pipelines can execute other pipelines. This allows for "synchronization" points.
+Produce results allows for "synchronization" points.
+
+Stages can execute pipelines; we refer to this as "nesting" pipelines.

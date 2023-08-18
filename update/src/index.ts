@@ -6,14 +6,6 @@ interface StageData<
   TResult,
 > {
   /**
-   * should execute this stage?
-   */
-  shouldExecute?:
-    | boolean
-    | ((
-      params: TParams,
-    ) => boolean);
-  /**
    * Execute this stage.
    */
   doExecute: (
@@ -38,6 +30,16 @@ interface PipelineStageData<
     pipelineParams: TPipelineParams,
     pipelineStageResults: Record<number, TPipelineStageResult | void>,
   ) => TStageParams;
+
+  /**
+   * should execute this stage?
+   */
+  shouldExecute?:
+    | boolean
+    | ((
+      params: TStageParams,
+      pipelineStageResults: Record<number, TPipelineStageResult | void>,
+    ) => boolean);
 
   /**
    * Before executing any stage.
@@ -86,6 +88,31 @@ interface PipelineData<
   ) => TResult;
 }
 
+function shouldExecutePipelineStage<
+  TPipelineParams,
+  TPipelineStageResult,
+  TStageParams,
+  TStageResult,
+>(
+  iStageData: PipelineStageData<
+    TPipelineParams,
+    TPipelineStageResult,
+    TStageParams,
+    TStageResult
+  >,
+  iStageParams: TStageParams,
+  pipelineStageResults: Record<number, TPipelineStageResult | void>,
+) {
+  switch (typeof iStageData.shouldExecute) {
+    case "boolean":
+      return iStageData.shouldExecute;
+    case "function":
+      return iStageData.shouldExecute(iStageParams, pipelineStageResults);
+    default:
+      return true;
+  }
+}
+
 /**
  * Execute a pipeline.
  * Stagees {@link StageResult.nextStageParams} of each stage into the `params` of the next stage.
@@ -128,21 +155,14 @@ function executePipeline<
       iStageParams,
     );
 
-    let iShouldExecute;
-    switch (typeof iStageData.shouldExecute) {
-      case "boolean":
-        iShouldExecute = iStageData.shouldExecute;
-        break;
-      case "function":
-        iShouldExecute = iStageData.shouldExecute(iStageParams);
-        break;
-      default:
-        iShouldExecute = true;
-        break;
-    }
-
     let iStageResult;
-    if (iShouldExecute === true) {
+    if (
+      shouldExecutePipelineStage(
+        iStageData,
+        iStageParams,
+        stageResults,
+      )
+    ) {
       iStageResult = iStageData.doExecute(
         iStageParams,
       );
@@ -168,4 +188,9 @@ function executePipeline<
   }
 }
 
-export { executePipeline, type PipelineData, type StageData as StageData };
+export {
+  executePipeline,
+  type PipelineData,
+  shouldExecutePipelineStage,
+  type StageData as StageData,
+};

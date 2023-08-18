@@ -3,7 +3,17 @@
 STORY as a developer, I want example
   paku-8
 
-  TASK finish other stages of simulation pipeline
+  TASK create player-stage collision pipeline
+  TASK create player-stage collision resolution pipeline
+    kill the player
+  
+STORY as a user, I want indexed *and* named pipeline stages
+  in addition to an array, I want to support record
+
+---
+
+STORY as a user, I want "PassthroughPipelineStage"
+  which does not have "passParams" and forwards pipeline params straight to stage params
 
 ---
 
@@ -47,11 +57,6 @@ STORY as a user, I want a function which adds time
 STORY everyone want tests
   TASK add jest
   TASK create tests for standard pipeline
-
----
-
-STORY as a user, I want "PassthroughPipelineStage"
-  which does not have "passParams" and forwards pipeline params straight to stage params
 
 ---
 

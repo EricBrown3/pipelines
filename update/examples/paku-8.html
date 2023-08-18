@@ -5,7 +5,8 @@
   <title>paku-8</title>
   <script type="module">
     import {
-      executePipeline
+      executePipeline,
+      shouldExecutePipelineStage
     } from '../dist/index.js'
 
     /**
@@ -21,35 +22,45 @@
       return Math.floor(Math.random() * (max - min + 1)) + min;
     }
 
-    // simulation sub-pipeline
-    const simulationPipelineMoveCharacterPipeline = {
-      stageDatas: [
-        // move player 
-        {
-          produceParams(
-            params,
-            pipelineStageResults
-          ) {
-            return params
-          },
-          shouldExecute(
-            params
-          ) {
-            return params.playerInput.x !== 0 || params.playerInput.y !== 0
-          },
-          doExecute(
-            params
-          ) {
-            return {
-              player: {
-                position: {
-                  x: params.worldState.player.position.x + params.playerInput.x,
-                  y: params.worldState.player.position.y + params.playerInput.y,
-                }
-              }
-            }
-          },
+    function createWorldState() {
+      return {
+        player: {
+          alive: true,
+          position: {
+            x: 32,
+            y: 32,
+          }
         },
+        blinky: {
+          position: {
+            x: 8,
+            y: 8,
+          }
+        },
+        inky: {
+          position: {
+            x: 56,
+            y: 8,
+          }
+        },
+        pinky: {
+          position: {
+            x: 8,
+            y: 56,
+          }
+        },
+        clyde: {
+          position: {
+            x: 56,
+            y: 56,
+          }
+        },
+      }
+    }
+
+    // simulation sub-pipeline
+    const moveGhostsSimulationPipeline = {
+      stageDatas: [
         // moveBlinky
         {
           produceParams(
@@ -173,13 +184,171 @@
       }
     }
 
+    // simulation sub-pipeline
+    // check player-ghost collisions
+    const playerGhostCollisionPipeline = {
+      stageDatas: [
+        // isCollidingBlinky
+        {
+          produceParams(
+            params,
+            pipelineStageResults
+          ) {
+            return params
+          },
+          doExecute(
+            params
+          ) {
+            return (params.currentWorldState.player.position.x === params.currentWorldState.blinky.position.x &&
+              params.currentWorldState.player.position.y === params.currentWorldState.blinky.position.y)
+          },
+        },
+        // isCollidingInky
+        {
+          produceParams(
+            params,
+            pipelineStageResults
+          ) {
+            return params
+          },
+          doExecute(
+            params
+          ) {
+            return params.currentWorldState.player.position.x === params.currentWorldState.inky.position.x &&
+              params.currentWorldState.player.position.y === params.currentWorldState.inky.position.y
+          },
+        },
+        // isCollidingPinky
+        {
+          produceParams(
+            params,
+            pipelineStageResults
+          ) {
+            return params
+          },
+          doExecute(
+            params
+          ) {
+            return params.currentWorldState.player.position.x === params.currentWorldState.pinky.position.x &&
+              params.currentWorldState.player.position.y === params.currentWorldState.pinky.position.y
+          },
+        },
+        // isCollidingClyde
+        {
+          produceParams(
+            params,
+          ) {
+            return params
+          },
+          doExecute(
+            params
+          ) {
+            return params.currentWorldState.player.position.x === params.currentWorldState.clyde.position.x &&
+              params.currentWorldState.player.position.y === params.currentWorldState.clyde.position.y
+          },
+        },
+      ],
+      produceResults(
+        params,
+        stageResults
+      ) {
+        return Object.values(stageResults).some(iStageResult => iStageResult === true)
+      }
+    }
+
     // params: { worldState: WorldState, input: { x: number, y: number  } }
     // result: Partial<WorldState>
     const simulationPipeline = {
       stageDatas: [
-        // TODO setup stage (ie, if player is dead, reset the game)
+        // move player 
+        {
+          produceParams(
+            params,
+            pipelineStageResults
+          ) {
+            return params
+          },
+          shouldExecute(
+            params
+          ) {
+            return !(
+              params.playerInput.x === 0 &&
+              params.playerInput.y === 0
+            )
+          },
+          doExecute(
+            params
+          ) {
+            return Object.assign(
+              params.worldState,
+              {
+                player: {
+                  position: {
+                    x: params.worldState.player.position.x + params.playerInput.x,
+                    y: params.worldState.player.position.y + params.playerInput.y,
+                  }
+                }
+              }
+            )
+          },
+        },
+        // execute move ghosts stage
+        // here, we demonstrate a dependency of the ghost movement stage on the player's move stage
+        // the "move ghosts" stage is a nested pipeline, whose parameters are only calculated once
+        {
+          produceParams(
+            pipelineParams,
+            pipelineStageResults
+          ) {
+            return {
+              worldState: Object.values(pipelineStageResults).at(-1) ?? pipelineParams.worldState,
+              blinkyInput: executePipeline(blinkyInputPipeline, pipelineParams),
+              inkyInput: executePipeline(inkyInputPipeline, pipelineParams),
+              pinkyInput: executePipeline(pinkyInputPipeline, pipelineParams),
+              clydeInput: executePipeline(clydeInputPipeline, pipelineParams),
+            }
+          },
+          doExecute(
+            params
+          ) {
+            return executePipeline(
+              moveGhostsSimulationPipeline,
+              params
+            )
+          },
+        },
+        // TODO collision resolution stage group
+        // combat stage
+        {
+          produceParams(
+            pipelineParams,
+            pipelineStageResults
+          ) {
+            const collisionPipelineResult = executePipeline(
+              playerGhostCollisionPipeline,
+              {
+                currentWorldState: Object.values(pipelineStageResults).at(-1)
+              }
+            )
 
-        // execute move character sub-pipeline
+            return collisionPipelineResult
+          },
+          shouldExecute(
+            params
+          ) {
+            return params === true
+          },
+          doExecute(
+            params
+          ) {
+            return {
+              player: {
+                alive: false
+              }
+            }
+          },
+        },
+        // reset stage
         {
           produceParams(
             pipelineParams,
@@ -188,23 +357,15 @@
             return pipelineParams
           },
           shouldExecute(
-            params
+            params,
+            pipelineStageResults
           ) {
-            return simulationPipelineMoveCharacterPipeline.stageDatas.some(iStageData => iStageData.shouldExecute(params))
+            return Object.values(pipelineStageResults).at(-1)?.player?.alive === false
           },
-          doExecute(
-            params
-          ) {
-            return executePipeline(
-              simulationPipelineMoveCharacterPipeline,
-              params
-            )
-          },
-        }
-        // TODO player-stage collision stage group
-        // TODO collision resolution stage group
-        // TODO character-character collision stage group
-        // TODO combat stage
+          doExecute() {
+            return createWorldState()
+          }
+        },
       ],
       produceResults(
         pipelineParams,
@@ -420,7 +581,7 @@
         params,
         stageResults
       ) {
-        return Object.values(stageResults)
+        const accumulator = Object.values(stageResults)
           .filter(iStageResult => iStageResult !== undefined)
           .reduce(
             (accumulator, currentValue) => {
@@ -434,6 +595,11 @@
               y: 0
             }
           )
+
+        return {
+          x: Math.sign(accumulator.x),
+          y: Math.sign(accumulator.y),
+        }
       }
     }
 
@@ -581,39 +747,7 @@
       }
     }
 
-    let worldState = {
-      player: {
-        position: {
-          x: 32,
-          y: 32,
-        }
-      },
-      blinky: {
-        position: {
-          x: 8,
-          y: 8,
-        }
-      },
-      inky: {
-        position: {
-          x: 56,
-          y: 8,
-        }
-      },
-      pinky: {
-        position: {
-          x: 8,
-          y: 56,
-        }
-      },
-      clyde: {
-        position: {
-          x: 56,
-          y: 56,
-        }
-      },
-    }
-
+    let worldState = createWorldState()
     let inputBuffer = []
 
     const canvas = document.getElementById('canvas')
@@ -626,7 +760,6 @@
     )
 
     function step() {
-
       // execute player input pipeline
       const playerInput = executePipeline(
         playerInputPipeline,
@@ -637,50 +770,12 @@
 
       console.log('step', 'playerInputPipeline results', playerInput)
 
-      // non-player characters have input pipelines using world state
-
-      // execute blinky input pipeline
-      const blinkyInput = executePipeline(
-        blinkyInputPipeline,
-        {
-          worldState
-        }
-      )
-
-      // execute inky input pipeline
-      const inkyInput = executePipeline(
-        inkyInputPipeline,
-        {
-          worldState
-        }
-      )
-
-      // execute pinky input pipeline
-      const pinkyInput = executePipeline(
-        pinkyInputPipeline,
-        {
-          worldState
-        }
-      )
-
-      // execute clyde input pipeline
-      const clydeInput = executePipeline(
-        clydeInputPipeline,
-        {
-
-        }
-      )
-
       // execute simulation pipeline
       worldState = executePipeline(
         simulationPipeline,
         {
           worldState,
           playerInput,
-          blinkyInput,
-          inkyInput,
-          pinkyInput,
-          clydeInput,
         }
       )
 
@@ -713,7 +808,25 @@
 
 <body>
   <h1>paku-8</h1>
-  <h2>This examples demonstrates usage of multiple pipelines with nesting.</h2>
+  <h2>This examples demonstrates:
+    <ul>
+      <li>
+        simulation pipelines
+      </li>
+      <li>
+        presentation pipelines
+      </li>
+      <li>
+        input pipelines
+      </li>
+      <li>
+        collision pipelines
+      </li>
+      <li>
+        nested pipelines
+      </li>
+    </ul>
+  </h2>
   <canvas id="canvas" width="64" height="64" style="image-rendering: pixelated; width: 50%; height: 50%">
 
   </canvas>
