@@ -75,9 +75,14 @@ interface PipelineData<
   /**
    * Stages to execute.
    */
-  readonly stageDatas: Array<
-    PipelineStageData<TParams, TStageResult, TStageParams, TStageResult>
-  >;
+  readonly stageDatas:
+    | Record<
+      number | string,
+      PipelineStageData<TParams, TStageResult, TStageParams, TStageResult>
+    >
+    | Array<
+      PipelineStageData<TParams, TStageResult, TStageParams, TStageResult>
+    >;
 
   /**
    * Produce this pipeline's results.
@@ -133,14 +138,12 @@ function executePipeline<
   >,
   params: TParams,
 ): TResult | void {
-  let stageResults: Record<number, TStageResult | void> = {};
-  for (
-    let iStageOrderIndex = 0;
-    iStageOrderIndex < data.stageDatas.length;
-    iStageOrderIndex++
-  ) {
-    const iStageData = data.stageDatas[iStageOrderIndex];
+  let stageResults: Record<string | number, TStageResult | void> = {};
+  const stageEntries = Object.entries(data.stageDatas);
 
+  for (
+    const [iStageOrderIndex, iStageData] of stageEntries
+  ) {
     if (iStageData === undefined) {
       throw new Error(`Missing data!`);
     }

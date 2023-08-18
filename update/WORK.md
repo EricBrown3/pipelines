@@ -6,9 +6,6 @@ STORY as a developer, I want example
   TASK create player-stage collision pipeline
   TASK create player-stage collision resolution pipeline
     kill the player
-  
-STORY as a user, I want indexed *and* named pipeline stages
-  in addition to an array, I want to support record
 
 ---
 

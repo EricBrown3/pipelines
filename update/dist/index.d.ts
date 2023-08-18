@@ -40,7 +40,7 @@ interface PipelineData<TParams, TResult, TStageParams, TStageResult> {
     /**
      * Stages to execute.
      */
-    readonly stageDatas: Array<PipelineStageData<TParams, TStageResult, TStageParams, TStageResult>>;
+    readonly stageDatas: Record<number | string, PipelineStageData<TParams, TStageResult, TStageParams, TStageResult>> | Array<PipelineStageData<TParams, TStageResult, TStageParams, TStageResult>>;
     /**
      * Produce this pipeline's results.
      */

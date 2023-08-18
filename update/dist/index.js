@@ -11,8 +11,8 @@ function shouldExecutePipelineStage(iStageData, iStageParams, pipelineStageResul
 }
 function executePipeline(data, params) {
   let stageResults = {};
-  for (let iStageOrderIndex = 0; iStageOrderIndex < data.stageDatas.length; iStageOrderIndex++) {
-    const iStageData = data.stageDatas[iStageOrderIndex];
+  const stageEntries = Object.entries(data.stageDatas);
+  for (const [iStageOrderIndex, iStageData] of stageEntries) {
     if (iStageData === void 0) {
       throw new Error(`Missing data!`);
     }
