@@ -50,6 +50,11 @@ STORY everyone want tests
 
 ---
 
+STORY as a user, I want "PassthroughPipelineStage"
+  which does not have "passParams" and forwards pipeline params straight to stage params
+
+---
+
 STORY as a user, I want to compose, "withLockstep"
 
 STORY as a user, I want to compose, "withRollback"

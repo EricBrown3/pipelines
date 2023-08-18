@@ -27,7 +27,8 @@
         // move player 
         {
           produceParams(
-            params
+            params,
+            pipelineStageResults
           ) {
             return params
           },
@@ -52,14 +53,16 @@
         // moveBlinky
         {
           produceParams(
-            params
+            params,
+            pipelineStageResults
           ) {
             return params
           },
           shouldExecute(
             params
           ) {
-            return params.blinkyInput.x !== 0 || params.blinkyInput.y !== 0
+            return params.blinkyInput.x !== 0 ||
+              params.blinkyInput.y !== 0
           },
           doExecute(
             params
@@ -77,7 +80,8 @@
         // moveInky
         {
           produceParams(
-            params
+            params,
+            pipelineStageResults
           ) {
             return params
           },
@@ -102,7 +106,8 @@
         // movePinky
         {
           produceParams(
-            params
+            params,
+            pipelineStageResults
           ) {
             return params
           },
@@ -127,7 +132,7 @@
         // moveClyde
         {
           produceParams(
-            params
+            params,
           ) {
             return params
           },
@@ -154,7 +159,7 @@
         params,
         stageResults
       ) {
-        return stageResults
+        return Object.values(stageResults)
           .filter(iStageResult => iStageResult !== undefined)
           .reduce(
             (accumulator, currentValue) => {
@@ -177,9 +182,10 @@
         // execute move character sub-pipeline
         {
           produceParams(
-            params
+            pipelineParams,
+            pipelineStageResults
           ) {
-            return params
+            return pipelineParams
           },
           shouldExecute(
             params
@@ -201,11 +207,10 @@
         // TODO combat stage
       ],
       produceResults(
-        params,
+        pipelineParams,
         stageResults
       ) {
-        return stageResults
-          .filter(iStageResult => iStageResult !== undefined)
+        return Object.values(stageResults)
           .reduce(
             (accumulator, currentValue) => {
               return Object.assign(
@@ -213,7 +218,7 @@
                 currentValue
               )
             },
-            params.worldState
+            pipelineParams.worldState
           );
       }
     }
@@ -222,12 +227,10 @@
       stageDatas: [
         { // drawBackground
           produceParams(
-            params
+            pipelineParams,
+            pipelineStageResults
           ) {
-            return params
-          },
-          shouldExecute() {
-            return true
+            return pipelineParams
           },
           doExecute(
             params
@@ -242,12 +245,10 @@
         },
         { // drawBlinky
           produceParams(
-            params
+            pipelineParams,
+            pipelineStageResults
           ) {
-            return params
-          },
-          shouldExecute() {
-            return true
+            return pipelineParams
           },
           doExecute(
             params
@@ -267,12 +268,10 @@
         },
         { // drawInky
           produceParams(
-            params
+            pipelineParams,
+            pipelineStageResults
           ) {
-            return params
-          },
-          shouldExecute() {
-            return true
+            return pipelineParams
           },
           doExecute(
             params
@@ -292,12 +291,10 @@
         },
         { // drawPinky
           produceParams(
-            params
+            pipelineParams,
+            pipelineStageResults
           ) {
-            return params
-          },
-          shouldExecute() {
-            return true
+            return pipelineParams
           },
           doExecute(
             params
@@ -317,12 +314,10 @@
         },
         { // drawClyde
           produceParams(
-            params
+            pipelineParams,
+            pipelineStageResults
           ) {
-            return params
-          },
-          shouldExecute() {
-            return true
+            return pipelineParams
           },
           doExecute(
             params
@@ -342,12 +337,10 @@
         },
         { // drawPlayer
           produceParams(
-            params
+            params,
+            pipelineStageResults
           ) {
             return params
-          },
-          shouldExecute() {
-            return true
           },
           doExecute(
             params
@@ -366,9 +359,6 @@
           }
         }
       ],
-      produceResults() {
-
-      }
     }
 
     // params: Array<KeyboardEvent | MouseEvent>
@@ -378,7 +368,8 @@
         // TODO mouse stage
         {
           produceParams(
-            params
+            params,
+            pipelineStageResults
           ) {
             return params
           },
@@ -429,7 +420,7 @@
         params,
         stageResults
       ) {
-        return stageResults
+        return Object.values(stageResults)
           .filter(iStageResult => iStageResult !== undefined)
           .reduce(
             (accumulator, currentValue) => {
@@ -451,11 +442,6 @@
     const blinkyInputPipeline = {
       stageDatas: [
         {
-          shouldExecute(
-            params
-          ) {
-            return true
-          },
           doExecute(
             params
           ) {
@@ -465,7 +451,8 @@
             }
           },
           produceParams(
-            params
+            params,
+            pipelineStageResults
           ) {
             return params
           },
@@ -487,11 +474,6 @@
     const inkyInputPipeline = {
       stageDatas: [
         {
-          shouldExecute(
-            params
-          ) {
-            return true
-          },
           doExecute(
             params
           ) {
@@ -509,7 +491,8 @@
             }
           },
           produceParams(
-            params
+            params,
+            pipelineStageResults
           ) {
             return params
           },
@@ -531,11 +514,6 @@
     const pinkyInputPipeline = {
       stageDatas: [
         {
-          shouldExecute(
-            params
-          ) {
-            return true
-          },
           doExecute(
             params
           ) {
@@ -553,7 +531,8 @@
             }
           },
           produceParams(
-            params
+            params,
+            pipelineStageResults
           ) {
             return params
           },
@@ -575,11 +554,6 @@
     const clydeInputPipeline = {
       stageDatas: [
         {
-          shouldExecute(
-            params
-          ) {
-            return true
-          },
           doExecute(
             params
           ) {
@@ -589,7 +563,8 @@
             }
           },
           produceParams(
-            params
+            params,
+            pipelineStageResults
           ) {
             return params
           },
@@ -738,11 +713,11 @@
 
 <body>
   <h1>paku-8</h1>
-  <h2>This examples demonstrates usage of distinct pipelines with nesting.</h2>
+  <h2>This examples demonstrates usage of multiple pipelines with nesting.</h2>
   <canvas id="canvas" width="64" height="64" style="image-rendering: pixelated; width: 50%; height: 50%">
 
   </canvas>
-  <p>The game resets when a ghost catches you.</p>
+  <p>Use WASD to move. The game resets when a ghost catches you.</p>
 </body>
 
 </html>

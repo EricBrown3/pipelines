@@ -8,15 +8,17 @@ interface StageData<
   /**
    * should execute this stage?
    */
-  shouldExecute: (
-    params: TParams,
-  ) => boolean;
+  shouldExecute?:
+    | boolean
+    | ((
+      params: TParams,
+    ) => boolean);
   /**
    * Execute this stage.
    */
   doExecute: (
     params: TParams,
-  ) => TResult;
+  ) => TResult | void;
 }
 
 /**
@@ -24,14 +26,17 @@ interface StageData<
  */
 interface PipelineStageData<
   TPipelineParams,
+  TPipelineStageResult,
   TStageParams,
   TStageResult,
 > extends StageData<TStageParams, TStageResult> {
   /**
    * Produce params for this stage.
+   * @param pipelineStageResults current results of the stage pipeline.
    */
   readonly produceParams: (
     pipelineParams: TPipelineParams,
+    pipelineStageResults: Record<number, TPipelineStageResult | void>,
   ) => TStageParams;
 
   /**
@@ -69,15 +74,15 @@ interface PipelineData<
    * Stages to execute.
    */
   readonly stageDatas: Array<
-    PipelineStageData<TParams, TStageParams, TStageResult>
+    PipelineStageData<TParams, TStageResult, TStageParams, TStageResult>
   >;
 
   /**
    * Produce this pipeline's results.
    */
-  readonly produceResults: (
+  readonly produceResults?: (
     params: TParams,
-    results: Array<TStageResult | void>,
+    results: Record<number, TStageResult | void>,
   ) => TResult;
 }
 
@@ -100,8 +105,8 @@ function executePipeline<
     TStageResult
   >,
   params: TParams,
-): TResult {
-  let stageResults = new Array(data.stageDatas.length);
+): TResult | void {
+  let stageResults: Record<number, TStageResult | void> = {};
   for (
     let iStageOrderIndex = 0;
     iStageOrderIndex < data.stageDatas.length;
@@ -115,6 +120,7 @@ function executePipeline<
 
     const iStageParams = iStageData.produceParams(
       params,
+      stageResults,
     );
 
     iStageData.beforeExecute?.(
@@ -122,9 +128,18 @@ function executePipeline<
       iStageParams,
     );
 
-    let iShouldExecute = iStageData.shouldExecute(
-      iStageParams,
-    );
+    let iShouldExecute;
+    switch (typeof iStageData.shouldExecute) {
+      case "boolean":
+        iShouldExecute = iStageData.shouldExecute;
+        break;
+      case "function":
+        iShouldExecute = iStageData.shouldExecute(iStageParams);
+        break;
+      default:
+        iShouldExecute = true;
+        break;
+    }
 
     let iStageResult;
     if (iShouldExecute === true) {
@@ -133,8 +148,6 @@ function executePipeline<
       );
 
       stageResults[iStageOrderIndex] = iStageResult;
-    } else {
-      stageResults[iStageOrderIndex] = undefined;
     }
 
     iStageData.afterExecute?.(
@@ -145,10 +158,14 @@ function executePipeline<
   }
 
   // produce results
-  return data.produceResults(
-    params,
-    stageResults,
-  );
+  if (data.produceResults !== undefined) {
+    return data.produceResults(
+      params,
+      stageResults,
+    );
+  } else {
+    return;
+  }
 }
 
 export { executePipeline, type PipelineData, type StageData as StageData };

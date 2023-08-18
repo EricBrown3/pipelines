@@ -5,20 +5,21 @@ interface StageData<TParams, TResult> {
     /**
      * should execute this stage?
      */
-    shouldExecute: (params: TParams) => boolean;
+    shouldExecute?: boolean | ((params: TParams) => boolean);
     /**
      * Execute this stage.
      */
-    doExecute: (params: TParams) => TResult;
+    doExecute: (params: TParams) => TResult | void;
 }
 /**
  * Data for executing a stage within a pipeline.
  */
-interface PipelineStageData<TPipelineParams, TStageParams, TStageResult> extends StageData<TStageParams, TStageResult> {
+interface PipelineStageData<TPipelineParams, TPipelineStageResult, TStageParams, TStageResult> extends StageData<TStageParams, TStageResult> {
     /**
      * Produce params for this stage.
+     * @param pipelineStageResults current results of the stage pipeline.
      */
-    readonly produceParams: (pipelineParams: TPipelineParams) => TStageParams;
+    readonly produceParams: (pipelineParams: TPipelineParams, pipelineStageResults: Record<number, TPipelineStageResult | void>) => TStageParams;
     /**
      * Before executing any stage.
      */
@@ -39,11 +40,11 @@ interface PipelineData<TParams, TResult, TStageParams, TStageResult> {
     /**
      * Stages to execute.
      */
-    readonly stageDatas: Array<PipelineStageData<TParams, TStageParams, TStageResult>>;
+    readonly stageDatas: Array<PipelineStageData<TParams, TStageResult, TStageParams, TStageResult>>;
     /**
      * Produce this pipeline's results.
      */
-    readonly produceResults: (params: TParams, results: Array<TStageResult | void>) => TResult;
+    readonly produceResults?: (params: TParams, results: Record<number, TStageResult | void>) => TResult;
 }
 /**
  * Execute a pipeline.
@@ -51,6 +52,6 @@ interface PipelineData<TParams, TResult, TStageParams, TStageResult> {
  * @param params stageed to the initial stage.
  * @returns results of the last stage.
  */
-declare function executePipeline<TParams, TResult, TStageParams, TStageResult>(data: PipelineData<TParams, TResult, TStageParams, TStageResult>, params: TParams): TResult;
+declare function executePipeline<TParams, TResult, TStageParams, TStageResult>(data: PipelineData<TParams, TResult, TStageParams, TStageResult>, params: TParams): TResult | void;
 
 export { PipelineData, StageData, executePipeline };

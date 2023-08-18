@@ -11,15 +11,24 @@ by creating an explicit pipeline of stages with params and results, we keep exec
 ## Seperation of Concerns
 With traditional ECS, there is only one monolithic data structure, the "world".
 
-Your world may be split across multiple contexts (web workers, threads, etc) or agents (server/ client).
+In reality, your application will be split across multiple contexts (web workers, threads, etc) or agents (server/ client).
 
 Each of these contexts/ agents have different concerns, and therefore should have different pipelines and passes.
 
-eg, you may have a "simulate" dedicated worker, which executes in its own worker thread, which executes once per "step" (ie, at a a fixed interval), which takes user input, which does not use delta time. 
-eg, you may have a "render" dedicated worker, which executes in its own worker thread, which executes once per frame, which does not take user input, which uses delta time.
-In this example, there is a clear dependency: the render update pipeline *only* reads from a slice of the world!
+eg, a typical setup:
+"simulate" pipeline which:
+- executes in its own worker thread
+- reads and writes to world state
+- executes once per "step" (ie, at a fixed interval)
+- takes world state and user input as params
 
-One pipelines per concern.
+"render" pipeline which:
+- executes in its own worker thread
+- reads from world state
+- executes once per animation frame
+- takes world state, canvas context, and delta time as params
+
+In this example, there is a clear dependency: the render pipeline *only* reads from a slice of the world!
 
 # Concepts
 
@@ -29,16 +38,9 @@ Pipeline have stages.
 Pipeline produces their results from the result of all their stages.
 
 ## Stage
-Each stage produces params from the pipeline stage.
+Each stage produces params from the pipeline's params and current stage results. 
 
-A stage can have a single pass, or multiple passes.
-
-Passes always execute.
-
-## Pass
-Params of a pass are produced by the stage.
-
-Passes are useful for independent execution within a stage, which have no dependencies of each other.
+This allows passing the results for one pipline stage as the params for another.
 
 # Usage
 Pipelines can execute other pipelines. This allows for "synchronization" points.
