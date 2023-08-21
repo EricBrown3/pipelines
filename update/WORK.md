@@ -1,20 +1,3 @@
-----
-
-STORY as a developer, I want example
-  paku-8
-
-  TASK create player-stage collision pipeline
-    I need to calculate the depth, but actually
-  TASK create player-stage collision resolution pipeline
-    kill the player
-
----
-
-STORY as a user, I want "PassthroughPipelineStage"
-  which does not have "passParams" and forwards pipeline params straight to stage params
-
----
-
 STORY as a developer, I want to compose execution "WithWorldState"
   this this pipeline, params of every pipeline and every stage has currentWorldState, and returns finalWorldState
 
