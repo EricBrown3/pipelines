@@ -1,14 +1,4 @@
 // src/index.ts
-function shouldExecutePipelineStage(iStageData, iStageParams, pipelineStageResults) {
-  switch (typeof iStageData.shouldExecute) {
-    case "boolean":
-      return iStageData.shouldExecute;
-    case "function":
-      return iStageData.shouldExecute(iStageParams, pipelineStageResults);
-    default:
-      return true;
-  }
-}
 function executePipeline(data, params) {
   let stageResults = {};
   const stageEntries = Object.entries(data.stageDatas);
@@ -25,11 +15,10 @@ function executePipeline(data, params) {
       iStageParams
     );
     let iStageResult;
-    if (shouldExecutePipelineStage(
-      iStageData,
+    if (iStageData.shouldExecute?.(
       iStageParams,
       stageResults
-    )) {
+    ) ?? true) {
       iStageResult = iStageData.doExecute(
         iStageParams
       );
@@ -51,7 +40,6 @@ function executePipeline(data, params) {
   }
 }
 export {
-  executePipeline,
-  shouldExecutePipelineStage
+  executePipeline
 };
 //# sourceMappingURL=index.js.map

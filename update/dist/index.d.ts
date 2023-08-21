@@ -19,7 +19,7 @@ interface PipelineStageData<TPipelineParams, TPipelineStageResult, TStageParams,
     /**
      * should execute this stage?
      */
-    shouldExecute?: boolean | ((params: TStageParams, pipelineStageResults: Record<number, TPipelineStageResult | void>) => boolean);
+    shouldExecute?: (params: TStageParams, pipelineStageResults: Record<number, TPipelineStageResult | void>) => boolean;
     /**
      * Before executing any stage.
      */
@@ -46,7 +46,6 @@ interface PipelineData<TParams, TResult, TStageParams, TStageResult> {
      */
     readonly produceResults?: (params: TParams, results: Record<number, TStageResult | void>) => TResult;
 }
-declare function shouldExecutePipelineStage<TPipelineParams, TPipelineStageResult, TStageParams, TStageResult>(iStageData: PipelineStageData<TPipelineParams, TPipelineStageResult, TStageParams, TStageResult>, iStageParams: TStageParams, pipelineStageResults: Record<number, TPipelineStageResult | void>): boolean;
 /**
  * Execute a pipeline.
  * Stagees {@link StageResult.nextStageParams} of each stage into the `params` of the next stage.
@@ -55,4 +54,4 @@ declare function shouldExecutePipelineStage<TPipelineParams, TPipelineStageResul
  */
 declare function executePipeline<TParams, TResult, TStageParams, TStageResult>(data: PipelineData<TParams, TResult, TStageParams, TStageResult>, params: TParams): TResult | void;
 
-export { PipelineData, StageData, executePipeline, shouldExecutePipelineStage };
+export { PipelineData, StageData, executePipeline };

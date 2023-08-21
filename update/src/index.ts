@@ -34,12 +34,10 @@ interface PipelineStageData<
   /**
    * should execute this stage?
    */
-  shouldExecute?:
-    | boolean
-    | ((
-      params: TStageParams,
-      pipelineStageResults: Record<number, TPipelineStageResult | void>,
-    ) => boolean);
+  shouldExecute?: (
+    params: TStageParams,
+    pipelineStageResults: Record<number, TPipelineStageResult | void>,
+  ) => boolean;
 
   /**
    * Before executing any stage.
@@ -93,31 +91,6 @@ interface PipelineData<
   ) => TResult;
 }
 
-function shouldExecutePipelineStage<
-  TPipelineParams,
-  TPipelineStageResult,
-  TStageParams,
-  TStageResult,
->(
-  iStageData: PipelineStageData<
-    TPipelineParams,
-    TPipelineStageResult,
-    TStageParams,
-    TStageResult
-  >,
-  iStageParams: TStageParams,
-  pipelineStageResults: Record<number, TPipelineStageResult | void>,
-) {
-  switch (typeof iStageData.shouldExecute) {
-    case "boolean":
-      return iStageData.shouldExecute;
-    case "function":
-      return iStageData.shouldExecute(iStageParams, pipelineStageResults);
-    default:
-      return true;
-  }
-}
-
 /**
  * Execute a pipeline.
  * Stagees {@link StageResult.nextStageParams} of each stage into the `params` of the next stage.
@@ -160,11 +133,10 @@ function executePipeline<
 
     let iStageResult;
     if (
-      shouldExecutePipelineStage(
-        iStageData,
+      iStageData.shouldExecute?.(
         iStageParams,
         stageResults,
-      )
+      ) ?? true
     ) {
       iStageResult = iStageData.doExecute(
         iStageParams,
@@ -192,8 +164,10 @@ function executePipeline<
 }
 
 export {
-  executePipeline,
-  type PipelineData,
-  shouldExecutePipelineStage,
-  type StageData as StageData,
+  executePipeline
 };
+
+export type  {
+  PipelineData,
+  StageData
+}

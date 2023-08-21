@@ -1,12 +1,20 @@
-STORY as a developer, I want to compose execution "WithWorldState"
+STORY everyone want tests
+  TASK add jest
+
+---
+
+STORY as a developer, I want async
+  different concurrency models: any or all
+
+  tests!
+---
+
+STORY as a developer, I want to compose execution data "WithWorldState"
   this this pipeline, params of every pipeline and every stage has currentWorldState, and returns finalWorldState
 
   produceParams will create currentWorldState from pipeline
 
   stage will return finalWorldState
-
-  Stage.afterExecute
-    will reduce stage result into state, currentWorldState
 
 STORY as a developer, I want to compose execution "WithEvents"
     stateApi will be a property on params
@@ -16,9 +24,6 @@ STORY as a developer, I want to compose execution "WithEvents"
 
   produceParams will return 
     finalWorldState
-
-  Stage.afterExecute
-    will reduce stage result into state, currentWorldState
 
 ---
 
@@ -33,25 +38,8 @@ STORY as a user, I want a function which adds time
 
 ---
 
-STORY everyone want tests
-  TASK add jest
-  TASK create tests for standard pipeline
-
----
-
 STORY as a user, I want to compose, "withLockstep"
 
 STORY as a user, I want to compose, "withRollback"
 
 ---
-
-STORY as a developer, I want async
-  TASK bring back "order": for stages
-
-    stageOrder: [
-      [characterToStageCollision, stageToCharacterCollision],
-      combat
-    ]
-
----
-
