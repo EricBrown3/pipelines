@@ -33,26 +33,26 @@
         },
         blinky: {
           position: {
-            x: 8,
-            y: 8,
+            x: 0,
+            y: 0,
           }
         },
         inky: {
           position: {
-            x: 56,
-            y: 8,
+            x: 63,
+            y: 0,
           }
         },
         pinky: {
           position: {
-            x: 8,
-            y: 56,
+            x: 0,
+            y: 63,
           }
         },
         clyde: {
           position: {
-            x: 56,
-            y: 56,
+            x: 63,
+            y: 63,
           }
         },
       }
@@ -256,6 +256,109 @@
       }
     }
 
+    // pipeline to create the contact depth of a character
+    // params: { currentWorldState: WorldState, characterKey: string }
+    const characterStageCollisionPipeline = {
+      stageDatas: [
+        // isCollidingRight
+        {
+          produceParams(
+            params,
+            pipelineStageResults
+          ) {
+            return params
+          },
+          doExecute(
+            params
+          ) {
+            if (params.currentWorldState[params.characterKey].position.x < 64)
+              return
+
+            return {
+              x: params.currentWorldState[params.characterKey].position.x - 63
+            }
+          },
+        },
+        // isCollidingLeft
+        {
+          produceParams(
+            params,
+            pipelineStageResults
+          ) {
+            return params
+          },
+          doExecute(
+            params
+          ) {
+            if (params.currentWorldState[params.characterKey].position.x > -1)
+              return
+
+            return {
+              x: params.currentWorldState[params.characterKey].position.x
+            }
+          },
+        },
+        // isCollidingTop
+        {
+          produceParams(
+            params,
+            pipelineStageResults
+          ) {
+            return params
+          },
+          doExecute(
+            params
+          ) {
+            if (params.currentWorldState[params.characterKey].position.y < 64)
+              return
+
+            return {
+              y: params.currentWorldState[params.characterKey].position.y - 63
+            }
+          },
+        },
+        // isCollidingBottom
+        {
+          produceParams(
+            params,
+          ) {
+            return params
+          },
+          doExecute(
+            params
+          ) {
+            if (params.currentWorldState[params.characterKey].position.y > -1)
+              return
+
+            return {
+              y: params.currentWorldState[params.characterKey].position.y
+            }
+          },
+        },
+      ],
+      produceResults(
+        params,
+        stageResults
+      ) {
+        const contact = Object.values(stageResults)
+          .filter(iStageResult => iStageResult !== undefined)
+          .reduce(
+            (accumulator, currentValue) => {
+              return {
+                x: accumulator.x + (currentValue.x ?? 0),
+                y: accumulator.y + (currentValue.y ?? 0),
+              }
+            },
+            {
+              x: 0,
+              y: 0
+            }
+          )
+
+        return contact
+      }
+    }
+
     // params: { worldState: WorldState, input: { x: number, y: number  } }
     // result: Partial<WorldState>
     const simulationPipeline = {
@@ -292,6 +395,49 @@
             )
           },
         },
+        // player-stage collision and restitution stage
+        {
+          produceParams(
+            pipelineParams,
+            pipelineStageResults
+          ) {
+            const currentWorldState = Object.values(pipelineStageResults).at(-1) ?? pipelineParams.worldState
+
+            return {
+              worldState: currentWorldState,
+              contact: executePipeline(
+                characterStageCollisionPipeline,
+                {
+                  characterKey: 'player',
+                  currentWorldState: currentWorldState
+                }
+              )
+            }
+          },
+          shouldExecute(
+            params
+          ) {
+            return !(
+              params.contact.x === 0 &&
+              params.contact.y === 0
+            )
+          },
+          doExecute(
+            params
+          ) {
+            return Object.assign(
+              params.worldState,
+              {
+                player: {
+                  position: {
+                    x: params.worldState.player.position.x - params.contact.x,
+                    y: params.worldState.player.position.y - params.contact.y,
+                  }
+                }
+              }
+            )
+          },
+        },
         // execute move ghosts stage
         // here, we demonstrate a dependency of the ghost movement stage on the player's move stage
         // the "move ghosts" stage is a nested pipeline, whose parameters are only calculated once
@@ -317,7 +463,49 @@
             )
           },
         },
-        // TODO collision resolution stage group
+        // clyde-stage collision and restitution phase
+        {
+          produceParams(
+            pipelineParams,
+            pipelineStageResults
+          ) {
+            const currentWorldState = Object.values(pipelineStageResults).at(-1) ?? pipelineParams.worldState
+
+            return {
+              worldState: currentWorldState,
+              contact: executePipeline(
+                characterStageCollisionPipeline,
+                {
+                  characterKey: 'clyde',
+                  currentWorldState: currentWorldState
+                }
+              )
+            }
+          },
+          shouldExecute(
+            params
+          ) {
+            return !(
+              params.contact.x === 0 &&
+              params.contact.y === 0
+            )
+          },
+          doExecute(
+            params
+          ) {
+            return Object.assign(
+              params.worldState,
+              {
+                clyde: {
+                  position: {
+                    x: params.worldState.clyde.position.x - params.contact.x,
+                    y: params.worldState.clyde.position.y - params.contact.y,
+                  }
+                }
+              }
+            )
+          },
+        },
         // combat stage
         {
           produceParams(

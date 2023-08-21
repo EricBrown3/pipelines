@@ -4,6 +4,7 @@ STORY as a developer, I want example
   paku-8
 
   TASK create player-stage collision pipeline
+    I need to calculate the depth, but actually
   TASK create player-stage collision resolution pipeline
     kill the player
 
@@ -15,13 +16,11 @@ STORY as a user, I want "PassthroughPipelineStage"
 ---
 
 STORY as a developer, I want to compose execution "WithWorldState"
-  stateApi will be a property on params
-    
-  state will contain
-    currentWorldState
+  this this pipeline, params of every pipeline and every stage has currentWorldState, and returns finalWorldState
 
-  produceParams will return 
-    finalWorldState
+  produceParams will create currentWorldState from pipeline
+
+  stage will return finalWorldState
 
   Stage.afterExecute
     will reduce stage result into state, currentWorldState
