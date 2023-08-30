@@ -62,7 +62,7 @@
       stageDatas: [
         // moveBlinky
         {
-          produceParams(
+          createParams(
             params,
             pipelineStageResults
           ) {
@@ -89,7 +89,7 @@
         },
         // moveInky
         {
-          produceParams(
+          createParams(
             params,
             pipelineStageResults
           ) {
@@ -115,7 +115,7 @@
         },
         // movePinky
         {
-          produceParams(
+          createParams(
             params,
             pipelineStageResults
           ) {
@@ -141,7 +141,7 @@
         },
         // moveClyde
         {
-          produceParams(
+          createParams(
             params,
           ) {
             return params
@@ -165,7 +165,7 @@
           },
         },
       ],
-      produceResults(
+      createResults(
         params,
         stageResults
       ) {
@@ -189,7 +189,7 @@
       stageDatas: [
         // isCollidingBlinky
         {
-          produceParams(
+          createParams(
             params,
             pipelineStageResults
           ) {
@@ -204,7 +204,7 @@
         },
         // isCollidingInky
         {
-          produceParams(
+          createParams(
             params,
             pipelineStageResults
           ) {
@@ -219,7 +219,7 @@
         },
         // isCollidingPinky
         {
-          produceParams(
+          createParams(
             params,
             pipelineStageResults
           ) {
@@ -234,7 +234,7 @@
         },
         // isCollidingClyde
         {
-          produceParams(
+          createParams(
             params,
           ) {
             return params
@@ -247,7 +247,7 @@
           },
         },
       ],
-      produceResults(
+      createResults(
         params,
         stageResults
       ) {
@@ -261,7 +261,7 @@
       stageDatas: [
         // isCollidingRight
         {
-          produceParams(
+          createParams(
             params,
             pipelineStageResults
           ) {
@@ -280,7 +280,7 @@
         },
         // isCollidingLeft
         {
-          produceParams(
+          createParams(
             params,
             pipelineStageResults
           ) {
@@ -299,7 +299,7 @@
         },
         // isCollidingTop
         {
-          produceParams(
+          createParams(
             params,
             pipelineStageResults
           ) {
@@ -318,7 +318,7 @@
         },
         // isCollidingBottom
         {
-          produceParams(
+          createParams(
             params,
           ) {
             return params
@@ -335,7 +335,7 @@
           },
         },
       ],
-      produceResults(
+      createResults(
         params,
         stageResults
       ) {
@@ -364,7 +364,7 @@
       stageDatas: [
         // move player 
         {
-          produceParams(
+          createParams(
             params,
             pipelineStageResults
           ) {
@@ -396,7 +396,7 @@
         },
         // player-stage collision and restitution stage
         {
-          produceParams(
+          createParams(
             pipelineParams,
             pipelineStageResults
           ) {
@@ -441,7 +441,7 @@
         // here, we demonstrate a dependency of the ghost movement stage on the player's move stage
         // the "move ghosts" stage is a nested pipeline, whose parameters are only calculated once
         {
-          produceParams(
+          createParams(
             pipelineParams,
             pipelineStageResults
           ) {
@@ -464,7 +464,7 @@
         },
         // clyde-stage collision and restitution phase
         {
-          produceParams(
+          createParams(
             pipelineParams,
             pipelineStageResults
           ) {
@@ -507,7 +507,7 @@
         },
         // combat stage
         {
-          produceParams(
+          createParams(
             pipelineParams,
             pipelineStageResults
           ) {
@@ -537,7 +537,7 @@
         },
         // reset stage
         {
-          produceParams(
+          createParams(
             pipelineParams,
             pipelineStageResults
           ) {
@@ -554,7 +554,7 @@
           }
         },
       ],
-      produceResults(
+      createResults(
         pipelineParams,
         stageResults
       ) {
@@ -574,7 +574,7 @@
     const presentationPipelineData = {
       stageDatas: [
         { // drawBackground
-          produceParams(
+          createParams(
             pipelineParams,
             pipelineStageResults
           ) {
@@ -592,7 +592,7 @@
           }
         },
         { // drawBlinky
-          produceParams(
+          createParams(
             pipelineParams,
             pipelineStageResults
           ) {
@@ -615,7 +615,7 @@
           }
         },
         { // drawInky
-          produceParams(
+          createParams(
             pipelineParams,
             pipelineStageResults
           ) {
@@ -638,7 +638,7 @@
           }
         },
         { // drawPinky
-          produceParams(
+          createParams(
             pipelineParams,
             pipelineStageResults
           ) {
@@ -661,7 +661,7 @@
           }
         },
         { // drawClyde
-          produceParams(
+          createParams(
             pipelineParams,
             pipelineStageResults
           ) {
@@ -684,7 +684,7 @@
           }
         },
         { // drawPlayer
-          produceParams(
+          createParams(
             params,
             pipelineStageResults
           ) {
@@ -715,7 +715,7 @@
       stageDatas: [
         // TODO mouse stage
         {
-          produceParams(
+          createParams(
             params,
             pipelineStageResults
           ) {
@@ -764,7 +764,7 @@
           },
         }
       ],
-      produceResults(
+      createResults(
         params,
         stageResults
       ) {
@@ -803,7 +803,7 @@
               y: Math.sign(params.worldState.player.position.y - params.worldState.blinky.position.y),
             }
           },
-          produceParams(
+          createParams(
             params,
             pipelineStageResults
           ) {
@@ -811,7 +811,7 @@
           },
         }
       ],
-      produceResults(
+      createResults(
         params,
         stageResults
       ) {
@@ -843,7 +843,7 @@
               }
             }
           },
-          produceParams(
+          createParams(
             params,
             pipelineStageResults
           ) {
@@ -851,7 +851,7 @@
           },
         }
       ],
-      produceResults(
+      createResults(
         params,
         stageResults
       ) {
@@ -883,7 +883,7 @@
               }
             }
           },
-          produceParams(
+          createParams(
             params,
             pipelineStageResults
           ) {
@@ -891,7 +891,7 @@
           },
         }
       ],
-      produceResults(
+      createResults(
         params,
         stageResults
       ) {
@@ -915,7 +915,7 @@
               y: getRandomInt(-1, 1),
             }
           },
-          produceParams(
+          createParams(
             params,
             pipelineStageResults
           ) {
@@ -923,7 +923,7 @@
           },
         }
       ],
-      produceResults(
+      createResults(
         params,
         stageResults
       ) {

@@ -12,10 +12,10 @@ interface StageData<TParams, TResult> {
  */
 interface PipelineStageData<TPipelineParams, TPipelineStageResult, TStageParams, TStageResult> extends StageData<TStageParams, TStageResult> {
     /**
-     * Produce params for this stage.
+     * create params for this stage.
      * @param pipelineStageResults current results of the stage pipeline.
      */
-    readonly produceParams: (pipelineParams: TPipelineParams, pipelineStageResults: Record<number, TPipelineStageResult | void>) => TStageParams;
+    readonly createParams: (pipelineParams: TPipelineParams, pipelineStageResults: Record<number, TPipelineStageResult | void>) => TStageParams;
     /**
      * should execute this stage?
      */
@@ -42,9 +42,9 @@ interface PipelineData<TParams, TResult, TStageParams, TStageResult> {
      */
     readonly stageDatas: Record<number | string, PipelineStageData<TParams, TStageResult, TStageParams, TStageResult>> | Array<PipelineStageData<TParams, TStageResult, TStageParams, TStageResult>>;
     /**
-     * Produce this pipeline's results.
+     * create this pipeline's results.
      */
-    readonly produceResults?: (params: TParams, results: Record<number, TStageResult | void>) => TResult;
+    readonly createResults?: (params: TParams, results: Record<number, TStageResult | void>) => TResult;
 }
 /**
  * Execute a pipeline.

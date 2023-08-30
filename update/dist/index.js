@@ -6,7 +6,7 @@ function executePipeline(data, params) {
     if (iStageData === void 0) {
       throw new Error(`Missing data!`);
     }
-    const iStageParams = iStageData.produceParams(
+    const iStageParams = iStageData.createParams(
       params,
       stageResults
     );
@@ -30,8 +30,8 @@ function executePipeline(data, params) {
       iStageResult
     );
   }
-  if (data.produceResults !== void 0) {
-    return data.produceResults(
+  if (data.createResults !== void 0) {
+    return data.createResults(
       params,
       stageResults
     );

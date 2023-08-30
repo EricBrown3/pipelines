@@ -4,7 +4,7 @@ Need to execute stages of a pipeline sequentially.
 Primitive data structure, a "pipeline".
 
 ## Dependency
-By allowing stages to produce params (which are used by nested pipelines), we allows users to determine dependencies between stages in a straightfoward and orthogonal way.
+By allowing stages to create params (which are used by nested pipelines), we allows users to determine dependencies between stages in a straightfoward and orthogonal way.
 
 Dependencies are implicitly defined through their order.
 
@@ -38,14 +38,12 @@ In this example, there is a clear dependency: the render pipeline *only* reads f
 ## Pipeline
 Pipeline have stages.
 
-Pipeline produces their results from the result of all their stages.
+Pipeline creates their results from the result of all their stages.
 
 ## Stage
-Each stage produces params from the pipeline's params and current stage results. 
+Each stage creates params from the pipeline's params and current stage results. 
 
 This allows passing the results for one pipline stage as the params for another.
 
 # Usage
-Produce results allows for "synchronization" points.
-
 Stages can execute pipelines; we refer to this as "nesting" pipelines.

@@ -31,19 +31,19 @@ interface PipelineStageData<
   TResult,
 > extends StageData<TParams, TResult> {
   /**
-   * Produce `params` for this stage.
+   * Create `params` for this stage.
    * @param pipelineParams Type of `params` for the pipeline of this stage. ie, passed to {@link executePipeline}.
    * @param pipelineStageResults Return of {@link StageData.doExecute} of other stages in this pipeline.
    * @returns Params passed to all functions of this stage.
    */
-  readonly produceParams: (
+  readonly createParams: (
     pipelineParams: TPipelineParams,
     pipelineStageResults: Record<number, TPipelineStageResult>,
   ) => TParams;
 
   /**
    * Should execute this stage?
-   * @param params Return of {@link produceParams}.
+   * @param params Return of {@link createParams}.
    * @param pipelineStageResults Return of {@link StageData.doExecute} of other stages in this pipeline.
    * @return Should invoke {@link doExecute}?
    */
@@ -56,7 +56,7 @@ interface PipelineStageData<
    * Hook invoked before executing this stage.
    * Invoked before {@link shouldExecute}.
    * @param pipelineParams params passed to {@link executePipeline}.
-   * @param params Return of {@link produceParams}.
+   * @param params Return of {@link createParams}.
    * @param willExecute Will invoke {@link StageData.doExecute}? ie, return of {@link shouldExecute}.
    */
   readonly beforeExecute?: (
@@ -69,7 +69,7 @@ interface PipelineStageData<
    * Hook invoked after executing this stage.
    * Always invoked (even when {@link shouldExecute} returns `false`).
    * @param pipelineParams Params for the pipeline of this stage. ie, passed to {@link executePipeline}.
-   * @param params Return of {@link produceParams}.
+   * @param params Return of {@link createParams}.
    * @param result Result of executing this stage, return of {@link StageData.doExecute}. `undefined` when `shouldExecute` returns `false`.
    * @param didExecute Did invoke {@link StageData.doExecute}? ie, return of {@link shouldExecute}.
    */
@@ -107,13 +107,13 @@ interface PipelineData<
     >;
 
   /**
-   * Produce this pipeline's results.
+   * Create this pipeline's results.
    * When undefined, {@link executePipeline} returns `void`.
    * @param pipelineParams Params passed to this pipeline. ie, passed to {@link executePipeline}.
    * @param pipelineStageResults Return of {@link StageData.doExecute} from other stages in this pipeline.
    * @returns Used as return value for {@link executePipeline}.
    */
-  readonly produceResults?: (
+  readonly createResults?: (
     pipelineParams: TParams,
     pipelineStageResults: Record<number, TStageResult>,
   ) => TResult;
@@ -121,7 +121,7 @@ interface PipelineData<
 
 /**
  * Execute a pipeline.
- * @returns return of {@link PipelineData.produceResults}. `void` when {@link PipelineData.produceResults} is `undefined`.
+ * @returns return of {@link PipelineData.createResults}. `void` when {@link PipelineData.createResults} is `undefined`.
  */
 function executePipeline<
   TParams,
@@ -143,7 +143,7 @@ function executePipeline<
   for (
     const [iStageKey, iStageData] of stageEntries
   ) {
-    const iStageParams = iStageData.produceParams(
+    const iStageParams = iStageData.createParams(
       params,
       stageResults,
     );
@@ -178,9 +178,9 @@ function executePipeline<
     );
   }
 
-  // produce results
-  if (data.produceResults !== undefined) {
-    return data.produceResults(
+  // create results
+  if (data.createResults !== undefined) {
+    return data.createResults(
       params,
       stageResults,
     );

@@ -12,7 +12,7 @@ STORY as a developer, I want async
 STORY as a developer, I want to compose execution data "WithWorldState"
   this this pipeline, params of every pipeline and every stage has currentWorldState, and returns finalWorldState
 
-  produceParams will create currentWorldState from pipeline
+  createParams will create currentWorldState from pipeline
 
   stage will return finalWorldState
 
@@ -22,7 +22,7 @@ STORY as a developer, I want to compose execution "WithEvents"
   state will contain
     currentWorldState
 
-  produceParams will return 
+  createParams will return 
     finalWorldState
 
 ---
