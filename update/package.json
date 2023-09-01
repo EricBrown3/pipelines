@@ -8,7 +8,8 @@
   "scripts": {
     "dev": "http-server",
     "build": "tsup",
-    "test": "jest  --watch"
+    "test": "jest  --watch",
+    "lint": "eslint ."
   },
   "keywords": [],
   "author": "",
@@ -16,6 +17,9 @@
   "devDependencies": {
     "@jest/globals": "^29.6.2",
     "@types/http-server": "^0.12.1",
+    "@typescript-eslint/eslint-plugin": "^6.5.0",
+    "@typescript-eslint/parser": "^6.5.0",
+    "eslint": "^8.48.0",
     "http-server": "^14.1.1",
     "ts-jest": "^29.1.1",
     "ts-node": "^10.9.1",

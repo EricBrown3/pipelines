@@ -76,7 +76,7 @@ interface PipelineStageData<
   readonly afterExecute?: (
     pipelineParams: TPipelineParams,
     params: TParams,
-    result: TResult | undefined,
+    result: TResult | null,
     didExecute: boolean,
   ) => void;
 }
@@ -121,7 +121,7 @@ interface PipelineData<
 
 /**
  * Execute a pipeline.
- * @returns return of {@link PipelineData.createResults}. `void` when {@link PipelineData.createResults} is `undefined`.
+ * @returns return of {@link PipelineData.createResults}. `undefined` when {@link PipelineData.createResults} is `undefined`.
  */
 function executePipeline<
   TParams,
@@ -136,19 +136,19 @@ function executePipeline<
     TStageResult
   >,
   params: TParams,
-): TResult | void {
+): TResult | undefined {
   let stageResults: Record<string | number, TStageResult> = {};
-  const stageEntries = Object.entries(data.stageDatas);
+  const stageEntries: Array<[string, PipelineStageData<TParams, TStageResult, TStageParams, TStageResult>]> = Object.entries(data.stageDatas);
 
   for (
     const [iStageKey, iStageData] of stageEntries
   ) {
-    const iStageParams = iStageData.createParams(
+    const iStageParams: TStageParams = iStageData.createParams(
       params,
       stageResults,
     );
 
-    const iStageShouldExecute = iStageData.shouldExecute?.(
+    const iStageShouldExecute: boolean = iStageData.shouldExecute?.(
       iStageParams,
       stageResults,
     ) ?? true;
@@ -159,7 +159,7 @@ function executePipeline<
       iStageShouldExecute,
     );
 
-    let iStageResult;
+    let iStageResult: TStageResult | null = null;
     if (
       iStageShouldExecute
     ) {
