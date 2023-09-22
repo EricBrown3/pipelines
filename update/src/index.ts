@@ -32,29 +32,30 @@ interface PipelineStageData<
 > extends StageData<TParams, TResult> {
   /**
    * Create `params` for this stage.
-   * @param pipelineParams Type of `params` for the pipeline of this stage. ie, passed to {@link executePipeline}.
-   * @param pipelineStageResults Return of {@link StageData.doExecute} of other stages in this pipeline.
+   * @param params Type of `params` for the pipeline of this stage. ie, passed to {@link executePipeline}.
+   * @param stageResults Return of {@link StageData.doExecute} of other stages in this pipeline.
    * @returns Params passed to all functions of this stage.
    */
   readonly createParams: (
-    pipelineParams: TPipelineParams,
-    pipelineStageResults: Record<number, TPipelineStageResult>,
+    params: TPipelineParams,
+    stageResults: Record<string, TPipelineStageResult>,
   ) => TParams;
 
   /**
    * Should execute this stage?
    * @param params Return of {@link createParams}.
-   * @param pipelineStageResults Return of {@link StageData.doExecute} of other stages in this pipeline.
+   * @param stageResults Return of {@link StageData.doExecute} of other stages in this pipeline.
    * @return Should invoke {@link doExecute}?
    */
   readonly shouldExecute?: (
     params: TParams,
-    pipelineStageResults: Record<number, TPipelineStageResult>,
+    stageResults: Record<string, TPipelineStageResult>,
   ) => boolean;
 
   /**
    * Hook invoked before executing this stage.
-   * Invoked before {@link shouldExecute}.
+   * Always invoked (even when {@link shouldExecute} returns `false`).
+   * Invoked after {@link shouldExecute}, and before {@link StageData.doExecute}.
    * @param pipelineParams params passed to {@link executePipeline}.
    * @param params Return of {@link createParams}.
    * @param willExecute Will invoke {@link StageData.doExecute}? ie, return of {@link shouldExecute}.
@@ -70,7 +71,7 @@ interface PipelineStageData<
    * Always invoked (even when {@link shouldExecute} returns `false`).
    * @param pipelineParams Params for the pipeline of this stage. ie, passed to {@link executePipeline}.
    * @param params Return of {@link createParams}.
-   * @param result Result of executing this stage, return of {@link StageData.doExecute}. `undefined` when `shouldExecute` returns `false`.
+   * @param result Result of executing this stage, return of {@link StageData.doExecute}. `null` when `doExecute` was not invoked. ie, when `didExecute` is `false` and `shouldExecute` returned `false`.
    * @param didExecute Did invoke {@link StageData.doExecute}? ie, return of {@link shouldExecute}.
    */
   readonly afterExecute?: (
@@ -99,7 +100,7 @@ interface PipelineData<
    */
   readonly stageDatas:
     | Record<
-      number | string,
+      string,
       PipelineStageData<TParams, TStageResult, TStageParams, TStageResult>
     >
     | Array<
@@ -108,7 +109,7 @@ interface PipelineData<
 
   /**
    * Create this pipeline's results.
-   * When undefined, {@link executePipeline} returns `void`.
+   * When `undefined`, {@link executePipeline} returns `undefined`.
    * @param pipelineParams Params passed to this pipeline. ie, passed to {@link executePipeline}.
    * @param pipelineStageResults Return of {@link StageData.doExecute} from other stages in this pipeline.
    * @returns Used as return value for {@link executePipeline}.
@@ -137,23 +138,23 @@ function executePipeline<
   >,
   params: TParams,
 ): TResult | undefined {
-  let stageResults: Record<string | number, TStageResult> = {};
-  const stageEntries: Array<[string, PipelineStageData<TParams, TStageResult, TStageParams, TStageResult>]> = Object.entries(data.stageDatas);
+  let stageResults: Record<string, TStageResult> = {};
+  const stageDataEntries: Array<[string, PipelineStageData<TParams, TStageResult, TStageParams, TStageResult>]> = Object.entries(data.stageDatas);
 
   for (
-    const [iStageKey, iStageData] of stageEntries
+    const [iStageDataKey, iStageDataValue] of stageDataEntries
   ) {
-    const iStageParams: TStageParams = iStageData.createParams(
+    const iStageParams: TStageParams = iStageDataValue.createParams(
       params,
       stageResults,
     );
 
-    const iStageShouldExecute: boolean = iStageData.shouldExecute?.(
+    const iStageShouldExecute: boolean = iStageDataValue.shouldExecute?.(
       iStageParams,
       stageResults,
     ) ?? true;
 
-    iStageData.beforeExecute?.(
+    iStageDataValue.beforeExecute?.(
       params,
       iStageParams,
       iStageShouldExecute,
@@ -163,14 +164,14 @@ function executePipeline<
     if (
       iStageShouldExecute
     ) {
-      iStageResult = iStageData.doExecute(
+      iStageResult = iStageDataValue.doExecute(
         iStageParams,
       );
 
-      stageResults[iStageKey] = iStageResult;
+      stageResults[iStageDataKey] = iStageResult;
     }
 
-    iStageData.afterExecute?.(
+    iStageDataValue.afterExecute?.(
       params,
       iStageParams,
       iStageResult,
@@ -179,14 +180,10 @@ function executePipeline<
   }
 
   // create results
-  if (data.createResults !== undefined) {
-    return data.createResults(
-      params,
-      stageResults,
-    );
-  } else {
-    return;
-  }
+  return data.createResults?.(
+    params,
+    stageResults,
+  );
 }
 
 export type { PipelineData, StageData };

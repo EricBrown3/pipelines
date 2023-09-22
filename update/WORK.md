@@ -1,12 +1,12 @@
-STORY everyone want tests
-  TASK add jest
+--- 
+
+STORY as a user, I want stage functions to recieve stage keys in execution order and the current index
 
 ---
 
-STORY as a developer, I want async
-  different concurrency models: any or all
+STORY everyone want tests
+  TASK add jest
 
-  tests!
 ---
 
 STORY as a developer, I want to compose execution data "WithWorldState"
@@ -42,4 +42,10 @@ STORY as a user, I want to compose, "withLockstep"
 
 STORY as a user, I want to compose, "withRollback"
 
+---
+
+STORY as a developer, I want async
+  different concurrency models: any or all
+
+  tests!
 ---
