@@ -13,6 +13,10 @@ importers:
         version: 1.10.12
 
   update:
+    dependencies:
+      p-lazy:
+        specifier: ^4.0.0
+        version: 4.0.0
     devDependencies:
       '@jest/globals':
         specifier: ^29.6.2
@@ -2967,6 +2971,11 @@ packages:
       prelude-ls: 1.2.1
       type-check: 0.4.0
     dev: true
+
+  /p-lazy@4.0.0:
+    resolution: {integrity: sha512-8lIogVWwqBkiBy4FpylVHLalB9dZ25B2zBdY4OGGknDPWB7ehf2jyxmbh8z3MZsfbERLNU266h9Yx3cxHn3lFg==}
+    engines: {node: '>=12'}
+    dev: false
 
   /p-limit@2.3.0:
     resolution: {integrity: sha512-//88mFWSJx8lxCzwdAABTJL2MyWB12+eIY7MDL2SqLmAkeKU9qxRvWuSyTjm3FUmpBEMuFfckAIqEaVGUDxb6w==}

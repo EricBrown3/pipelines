@@ -3,9 +3,16 @@
 
 <head>
   <title>paku-8</title>
+  <script type="importmap">
+    {
+      "imports": {
+        "p-lazy": "https://unpkg.com/p-lazy"
+      }
+    }
+  </script>
   <script type="module">
     import {
-      executePipeline
+      executeSyncPipeline
     } from '../dist/index.js'
 
     /**
@@ -404,7 +411,7 @@
 
             return {
               worldState: currentWorldState,
-              contact: executePipeline(
+              contact: executeSyncPipeline(
                 characterStageCollisionPipeline,
                 {
                   characterKey: 'player',
@@ -447,16 +454,16 @@
           ) {
             return {
               worldState: Object.values(pipelineStageResults).at(-1) ?? pipelineParams.worldState,
-              blinkyInput: executePipeline(blinkyInputPipeline, pipelineParams),
-              inkyInput: executePipeline(inkyInputPipeline, pipelineParams),
-              pinkyInput: executePipeline(pinkyInputPipeline, pipelineParams),
-              clydeInput: executePipeline(clydeInputPipeline, pipelineParams),
+              blinkyInput: executeSyncPipeline(blinkyInputPipeline, pipelineParams),
+              inkyInput: executeSyncPipeline(inkyInputPipeline, pipelineParams),
+              pinkyInput: executeSyncPipeline(pinkyInputPipeline, pipelineParams),
+              clydeInput: executeSyncPipeline(clydeInputPipeline, pipelineParams),
             }
           },
           doExecute(
             params
           ) {
-            return executePipeline(
+            return executeSyncPipeline(
               moveGhostsSimulationPipeline,
               params
             )
@@ -472,7 +479,7 @@
 
             return {
               worldState: currentWorldState,
-              contact: executePipeline(
+              contact: executeSyncPipeline(
                 characterStageCollisionPipeline,
                 {
                   characterKey: 'clyde',
@@ -511,7 +518,7 @@
             pipelineParams,
             pipelineStageResults
           ) {
-            const collisionPipelineResult = executePipeline(
+            const collisionPipelineResult = executeSyncPipeline(
               playerGhostCollisionPipeline,
               {
                 currentWorldState: Object.values(pipelineStageResults).at(-1)
@@ -948,7 +955,7 @@
 
     function step() {
       // execute player input pipeline
-      const playerInput = executePipeline(
+      const playerInput = executeSyncPipeline(
         playerInputPipeline,
         {
           inputBuffer,
@@ -958,7 +965,7 @@
       console.log('step', 'playerInputPipeline results', playerInput)
 
       // execute simulation pipeline
-      worldState = executePipeline(
+      worldState = executeSyncPipeline(
         simulationPipeline,
         {
           worldState,
@@ -970,7 +977,7 @@
     }
 
     function frame() {
-      executePipeline(
+      executeSyncPipeline(
         presentationPipelineData,
         {
           context: canvas.getContext('2d'),
@@ -998,16 +1005,7 @@
   <h2>This examples demonstrates:
     <ul>
       <li>
-        simulation pipelines
-      </li>
-      <li>
-        presentation pipelines
-      </li>
-      <li>
-        input pipelines
-      </li>
-      <li>
-        collision pipelines
+        multiple pipelines
       </li>
       <li>
         nested pipelines

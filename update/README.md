@@ -3,20 +3,18 @@ Need to execute stages of a pipeline sequentially.
 
 Primitive data structure, a "pipeline".
 
-## Dependencies and Sync Points
-By allowing stages to create params (which are used by nested pipelines), we allows users to determine dependencies between stages in a straightfoward and orthogonal way.
+## Dependencies
+Dependencies are implicitly defined in a straightfoward and orthogonal way through composing pipelines.
 
-Dependencies are implicitly defined through order and composition of pipelines and stages.
-
-Instead of queries, we create params.
-Instead of groups and "sync points", we compose pipelines.
+Example:
+In a physics simulation for a typical 3D game, you calculate contacts, restitute bodies using those contacts, then write the bodies back to transforms. In an ECS paradigm, you would solve this by creating a system for each of these, and put these into a group.
 
 ## Seperation of Concerns
 With traditional ECS, there is only one monolithic data structure, the "world".
 
 In reality, your application will be split across multiple contexts (web workers, threads, etc) or agents (server/ client).
 
-Each of these contexts/ agents have different concerns, and therefore should have different pipelines and passes.
+Each of these contexts/ agents have different concerns, and therefore should have different execution.
 
 eg, a typical setup:
 "simulate" pipeline which:
