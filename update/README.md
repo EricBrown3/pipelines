@@ -3,13 +3,13 @@ Need to execute stages of a pipeline sequentially.
 
 Primitive data structure, a "pipeline".
 
-## Dependency
+## Dependencies and Sync Points
 By allowing stages to create params (which are used by nested pipelines), we allows users to determine dependencies between stages in a straightfoward and orthogonal way.
 
-Dependencies are implicitly defined through their order.
+Dependencies are implicitly defined through order and composition of pipelines and stages.
 
-Instead of sorting and groups, we define pipelines and stages.
-Instead of queries, we define params.
+Instead of queries, we create params.
+Instead of groups and "sync points", we compose pipelines.
 
 ## Seperation of Concerns
 With traditional ECS, there is only one monolithic data structure, the "world".

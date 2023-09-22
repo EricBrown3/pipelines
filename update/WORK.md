@@ -4,6 +4,14 @@ STORY as a user, I want stage functions to recieve stage keys in execution order
 
 ---
 
+STORY as a developer, I want async
+  different concurrency models: any or all
+
+  executePipelineSync
+  executePipelineAsync
+
+---
+
 STORY everyone want tests
   TASK add jest
 
@@ -41,11 +49,3 @@ STORY as a user, I want a function which adds time
 STORY as a user, I want to compose, "withLockstep"
 
 STORY as a user, I want to compose, "withRollback"
-
----
-
-STORY as a developer, I want async
-  different concurrency models: any or all
-
-  tests!
----

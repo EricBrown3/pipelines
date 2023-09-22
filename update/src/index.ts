@@ -122,6 +122,7 @@ interface PipelineData<
 
 /**
  * Execute a pipeline.
+ * @param order order to execute stages in. If `undefined`, the order of the keys of the stage datas is used. 
  * @returns return of {@link PipelineData.createResults}. `undefined` when {@link PipelineData.createResults} is `undefined`.
  */
 function executePipeline<
@@ -137,13 +138,38 @@ function executePipeline<
     TStageResult
   >,
   params: TParams,
+  order?: Array<number> | Array<string>,
 ): TResult | undefined {
+  order ??= Object.keys(data.stageDatas)
+
   let stageResults: Record<string, TStageResult> = {};
-  const stageDataEntries: Array<[string, PipelineStageData<TParams, TStageResult, TStageParams, TStageResult>]> = Object.entries(data.stageDatas);
 
   for (
-    const [iStageDataKey, iStageDataValue] of stageDataEntries
+    let i = 0;
+    i < order.length;
+    i++
   ) {
+    const iStageDataKey = order[i];
+
+    if (iStageDataKey === undefined) {
+      throw new Error();
+    }
+
+    let iStageDataValue;
+    if (Array.isArray(data.stageDatas)) {
+      if (typeof iStageDataKey !== "number") {
+        throw new Error();
+      }
+
+      iStageDataValue = data.stageDatas[iStageDataKey];
+    } else {
+      iStageDataValue = data.stageDatas[iStageDataKey];
+    }
+
+    if (iStageDataValue === undefined) {
+      throw new Error();
+    }
+
     const iStageParams: TStageParams = iStageDataValue.createParams(
       params,
       stageResults,
